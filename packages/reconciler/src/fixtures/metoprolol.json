@@ -1,0 +1,83 @@
+{
+  "claims": [
+    {
+      "id": "c1",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "metoprolol",
+      "verbatimText": "Take 25 milligrams of metoprolol twice daily.",
+      "value": "25mg twice daily",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-tue-ward-round",
+        "startMs": 184000,
+        "endMs": 189000,
+        "speaker": { "role": "consultant", "label": "Consultant, ward round" }
+      },
+      "observedAt": "2026-06-09T09:14:00Z"
+    },
+    {
+      "id": "c2",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "metoprolol",
+      "verbatimText": "Metoprolol 50 mg once daily",
+      "value": "50mg once daily",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-discharge-letter",
+        "page": 2,
+        "region": { "x": 0.12, "y": 0.44, "width": 0.63, "height": 0.03 }
+      },
+      "observedAt": "2026-06-12T16:05:00Z"
+    },
+    {
+      "id": "c3",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-change",
+      "subject": "furosemide",
+      "verbatimText": "We'll add furosemide 20 milligrams in the morning.",
+      "value": "add 20mg each morning",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-thu-registrar",
+        "startMs": 42000,
+        "endMs": 46500,
+        "speaker": { "role": "registrar" }
+      },
+      "observedAt": "2026-06-11T02:20:00Z"
+    },
+    {
+      "id": "c4",
+      "patientId": "synthetic-patient-1",
+      "category": "follow-up",
+      "subject": "cardiology-clinic",
+      "verbatimText": "You'll be seen again in the cardiology clinic in six weeks.",
+      "value": "cardiology clinic in 6 weeks",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-wed-nurse",
+        "startMs": 5000,
+        "endMs": 9000,
+        "speaker": { "role": "nurse" }
+      },
+      "observedAt": "2026-06-10T11:30:00Z"
+    },
+    {
+      "id": "c5",
+      "patientId": "synthetic-patient-1",
+      "category": "follow-up",
+      "subject": "cardiology-clinic",
+      "verbatimText": "Follow-up: cardiology clinic in 6 weeks.",
+      "value": "cardiology clinic in 6 weeks",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-discharge-letter",
+        "page": 1,
+        "region": { "x": 0.1, "y": 0.72, "width": 0.55, "height": 0.03 }
+      },
+      "observedAt": "2026-06-12T16:05:00Z"
+    }
+  ],
+  "confirmations": []
+}

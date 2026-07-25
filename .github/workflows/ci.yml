@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Guard — mobile has ZERO AI dependencies (invariant §1.3)
+        run: |
+          if grep -Eiq '"(@?ai-sdk|@ai-sdk/[^"]+|ai|openai|@anthropic-ai/[^"]+|@deepgram/[^"]+|@doctorsnotes/ai)"[[:space:]]*:' apps/mobile/package.json; then
+            echo "::error::apps/mobile must not depend on any AI package"; exit 1
+          fi
+          echo "ok: no AI deps in apps/mobile"
+
+      - name: Typecheck (all workspaces)
+        run: pnpm run typecheck:all
+
+      - name: Test (fixtures, network-free)
+        run: pnpm run test
+
+      - name: Dependency boundaries (dependency-cruiser)
+        run: pnpm run depcruise

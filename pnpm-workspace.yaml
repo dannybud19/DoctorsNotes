@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# If pnpm's default isolated node_modules ever breaks Metro resolution for the Expo app
+# (expo/expo#41806), switch to a hoisted layout by uncommenting:
+# nodeLinker: hoisted
