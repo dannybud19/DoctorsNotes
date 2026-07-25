@@ -86,6 +86,12 @@ Newest first. Append here whenever a non-obvious call is made.
 | D9 | **Large audio/photo blobs use an `expo-sqlite` outbox + resumable upload, not a row-sync engine.** | Row-sync tools (PowerSync/WatermelonDB) sync rows, not media blobs, and add licensing/weight without solving the hard part. |
 | D10 | **Synthetic fixtures only; PHI/BAA work is gated out until real data.** | Lets us build and test everything now with no real-patient risk. |
 | D11 | **Maintain this `PROJECT.md` as a living doc.** | Requested during cloud-plan review; the original source files were lost once — never again. |
+| D12 | **`reconcile()` validates `observedAt` for every claim, not just via the sort comparator.** | An independent test agent found a single-claim group could silently accept a bad timestamp (the comparator never runs for one element) — violating fail-loudly (§1.6). Hardened + locked with a regression test. |
+
+**Open design decisions (for Schmidt / design):**
+- **Uncorroborated → question volume.** Every single-source claim currently becomes a "question to
+  ask tomorrow," so most questions read "only one person mentioned this." Keep as-is for the MVP;
+  design may split these into a gentler section, separate from real "these disagree" questions.
 
 ---
 
@@ -123,8 +129,11 @@ apps/mobile (Expo, zero AI)  ──►  apps/web (Next.js/Vercel)  ──►  Su
 
 ## 7. Status
 
-- **Now:** foundation scaffold — docs, monorepo skeleton, typed stubs, pure reconciler + fixtures,
-  Supabase schema + RLS + seed, CI. **No feature implementation yet.**
+- **Foundation:** docs, monorepo, typed stubs, Supabase schema + RLS + seed, CI. **Done.**
+- **Now (MVP, fixture-driven):** real reconciler + running-picture/questions views + Expo screens
+  (home → verbatim/provenance drill-down → questions), rendering a synthetic 5-day admission fully
+  offline in Expo Go. 40 tests green (reconciler 32 incl. independent regression, supabase 8).
+  Capture / real AI / backend / reminders still stubbed.
 - **Next (follow-on):** real STT/OCR/explanation, reconciler internals, real capture + screens, the
   EAS dev-build reminder, and the parallel build agents against `AGENTS.md` owned paths.
 
