@@ -12,7 +12,11 @@
         "recordingId": "rec-tue-ward-round",
         "startMs": 184000,
         "endMs": 189000,
-        "speaker": { "role": "consultant", "label": "Consultant, ward round" }
+        "speaker": {
+          "role": "consultant",
+          "roleConfidence": "confirmed",
+          "label": "Consultant, ward round"
+        }
       },
       "observedAt": "2026-06-09T09:14:00Z"
     },
@@ -27,7 +31,12 @@
         "kind": "document",
         "documentId": "doc-discharge-letter",
         "page": 2,
-        "region": { "x": 0.12, "y": 0.44, "width": 0.63, "height": 0.03 }
+        "region": {
+          "x": 0.12,
+          "y": 0.44,
+          "width": 0.63,
+          "height": 0.03
+        }
       },
       "observedAt": "2026-06-12T16:05:00Z"
     },
@@ -43,7 +52,10 @@
         "recordingId": "rec-thu-registrar",
         "startMs": 42000,
         "endMs": 46500,
-        "speaker": { "role": "registrar" }
+        "speaker": {
+          "role": "registrar",
+          "roleConfidence": "inferred"
+        }
       },
       "observedAt": "2026-06-11T02:20:00Z"
     },
@@ -59,7 +71,10 @@
         "recordingId": "rec-wed-nurse",
         "startMs": 5000,
         "endMs": 9000,
-        "speaker": { "role": "nurse" }
+        "speaker": {
+          "role": "nurse",
+          "roleConfidence": "inferred"
+        }
       },
       "observedAt": "2026-06-10T11:30:00Z"
     },
@@ -74,7 +89,12 @@
         "kind": "document",
         "documentId": "doc-discharge-letter",
         "page": 1,
-        "region": { "x": 0.1, "y": 0.72, "width": 0.55, "height": 0.03 }
+        "region": {
+          "x": 0.1,
+          "y": 0.72,
+          "width": 0.55,
+          "height": 0.03
+        }
       },
       "observedAt": "2026-06-12T16:05:00Z"
     }

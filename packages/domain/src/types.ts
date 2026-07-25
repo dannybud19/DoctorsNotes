@@ -43,8 +43,18 @@ export const SpeakerRole = z.enum([
 ]);
 export type SpeakerRole = z.infer<typeof SpeakerRole>;
 
+/**
+ * How the speaker's role was determined from diarization. FROZEN.
+ * A turn with `roleConfidence: "unknown"` MUST NOT mint a Claim (PROJECT.md D13) — attributing
+ * words to a clinician who may not have said them breaks provenance. Such turns are held as pending.
+ */
+export const RoleConfidence = z.enum(["confirmed", "inferred", "unknown"]);
+export type RoleConfidence = z.infer<typeof RoleConfidence>;
+
 export const SpeakerRef = z.object({
   role: SpeakerRole,
+  /** How `role` was determined. A minted Claim's speaker is never "unknown" (see RoleConfidence). */
+  roleConfidence: RoleConfidence,
   /** Free-text label as heard/seen, e.g. "Dr Adeyemi". Never an inferred identity. */
   label: z.string().min(1).optional(),
 });
@@ -143,3 +153,73 @@ export const ReconcileInput = z.object({
 export type ReconcileInput = z.infer<typeof ReconcileInput>;
 
 export type ReconcileOutput = ClaimGroup[];
+
+// ---------------------------------------------------------------------------------------------
+// Admission lifecycle + Ask + post-discharge state (FROZEN contract for Wave 1 agents).
+// ---------------------------------------------------------------------------------------------
+
+/** Where the patient is in their journey. A discharge letter flips 'inpatient' → 'recovering'. */
+export const AdmissionPhase = z.enum(["inpatient", "recovering", "recovered"]);
+export type AdmissionPhase = z.infer<typeof AdmissionPhase>;
+
+/**
+ * The result of asking a question. FROZEN. Retrieval runs over ClaimGroup[] ONLY; the model never
+ * generates a medical fact. Empty `claimIds` can NEVER be 'answered'/'partial' — it is 'no_source'
+ * (enforced at the API boundary — the product's core safety property).
+ */
+export const AskResponse = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("answered"), claimIds: z.array(z.string().min(1)).min(1) }),
+  z.object({
+    kind: z.literal("partial"),
+    claimIds: z.array(z.string().min(1)).min(1),
+    gap: z.string().min(1),
+  }),
+  z.object({ kind: z.literal("no_source"), suggestedQuestion: z.string().min(1) }),
+]);
+export type AskResponse = z.infer<typeof AskResponse>;
+
+/** A question the patient saved to raise later. */
+export const SavedQuestion = z.object({
+  id: z.string().min(1),
+  prompt: z.string().min(1),
+  subject: z.string().min(1),
+  savedAt: IsoTimestamp,
+});
+export type SavedQuestion = z.infer<typeof SavedQuestion>;
+
+/**
+ * A medication due post-discharge. Its instruction is verbatim from a claim the patient CONFIRMED
+ * (D5) — a reminder never fires on an inferred/latest value. `fromClaimId` keeps provenance intact.
+ */
+export const DueMedication = z.object({
+  id: z.string().min(1),
+  subject: z.string().min(1),
+  /** Verbatim instruction copied from the confirmed claim, e.g. "Metoprolol 25 mg twice daily". */
+  verbatimInstruction: z.string().min(1),
+  fromClaimId: z.string().min(1),
+  nextDueAt: IsoTimestamp,
+});
+export type DueMedication = z.infer<typeof DueMedication>;
+
+/** One bedside encounter (consultation history). Links to the claims extracted from it. */
+export const Encounter = z.object({
+  id: z.string().min(1),
+  recordingId: z.string().min(1),
+  occurredAt: IsoTimestamp,
+  durationMs: z.number().int().nonnegative(),
+  speaker: SpeakerRef,
+  claimIds: z.array(z.string().min(1)),
+});
+export type Encounter = z.infer<typeof Encounter>;
+
+/** Patient-scoped app state that drives home screens ("what's changed", post-discharge, history). */
+export const PatientContext = z.object({
+  patientId: z.string().min(1),
+  phase: AdmissionPhase,
+  /** When the patient last opened the app — "what's changed" shows claims observed since this. */
+  lastOpenedAt: IsoTimestamp,
+  savedQuestions: z.array(SavedQuestion),
+  dueMedications: z.array(DueMedication),
+  encounters: z.array(Encounter),
+});
+export type PatientContext = z.infer<typeof PatientContext>;

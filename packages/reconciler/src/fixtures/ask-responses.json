@@ -1,0 +1,15 @@
+{
+  "answered": {
+    "kind": "answered",
+    "claimIds": ["a4", "a10"]
+  },
+  "partial": {
+    "kind": "partial",
+    "claimIds": ["a2", "a9"],
+    "gap": "The dose you were told (75mg) and the dose on your discharge letter (150mg) don't match — worth checking which is right."
+  },
+  "no_source": {
+    "kind": "no_source",
+    "suggestedQuestion": "When should I restart my usual blood pressure tablet?"
+  }
+}

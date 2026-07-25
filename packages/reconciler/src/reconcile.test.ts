@@ -6,7 +6,7 @@ import {
   type ClaimGroup,
   type Confirmation,
 } from "@doctorsnotes/domain";
-import { reconcile } from "./reconcile.js";
+import { reconcile } from "./reconcile";
 import metoprololFixture from "./fixtures/metoprolol.json";
 import admissionFixture from "./fixtures/admission-5day.json";
 
@@ -36,7 +36,7 @@ function makeClaim(overrides: Partial<Claim> & Pick<Claim, "id">): Claim {
       recordingId: "rec-x",
       startMs: 0,
       endMs: 1000,
-      speaker: { role: "consultant" },
+      speaker: { role: "consultant", roleConfidence: "confirmed" },
     },
     observedAt: "2026-06-09T09:14:00Z",
     ...overrides,
@@ -64,7 +64,7 @@ describe("reconcile — fixtures are valid, offline domain data", () => {
     const input = ReconcileInput.parse(admissionFixture);
     expect(input.claims.length).toBe(13);
     expect(input.confirmations.length).toBe(1);
-    expect(input.confirmations[0]!.fromClaimId).toBe("a2");
+    expect(input.confirmations[0]!.fromClaimId).toBe("a4");
   });
 });
 
@@ -183,20 +183,20 @@ describe("reconcile — ordering oldest → newest by observedAt", () => {
 describe("reconcile — confirmation attachment", () => {
   it("attaches a matching (category, subject) Confirmation", () => {
     const out = reconcile(ReconcileInput.parse(admissionFixture));
-    const aspirin = out.find(
-      (g) => g.category === "medication-dose" && g.subject === "aspirin",
+    const metformin = out.find(
+      (g) => g.category === "medication-dose" && g.subject === "metformin",
     )!;
-    expect(aspirin.confirmation).not.toBeNull();
-    expect(aspirin.confirmation!.id).toBe("conf-aspirin");
-    expect(aspirin.confirmation!.subject).toBe("aspirin");
+    expect(metformin.confirmation).not.toBeNull();
+    expect(metformin.confirmation!.id).toBe("conf-metformin");
+    expect(metformin.confirmation!.subject).toBe("metformin");
   });
 
   it("yields null confirmation for a non-matching subject", () => {
     const out = reconcile(ReconcileInput.parse(admissionFixture));
-    const metoprolol = out.find(
-      (g) => g.category === "medication-dose" && g.subject === "metoprolol",
+    const aspirin = out.find(
+      (g) => g.category === "medication-dose" && g.subject === "aspirin",
     )!;
-    expect(metoprolol.confirmation).toBeNull();
+    expect(aspirin.confirmation).toBeNull();
   });
 
   it("throws InvariantError when >1 Confirmation matches (must NOT silently pick one)", () => {

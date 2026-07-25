@@ -1,3 +1,3 @@
-export * from "./reconcile.js";
-export * from "./views.js";
-export { fixtures } from "./fixtures/index.js";
+export * from "./reconcile";
+export * from "./views";
+export { fixtures } from "./fixtures/index";
