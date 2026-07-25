@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "DoctorsNotes",
+    "slug": "doctorsnotes",
+    "scheme": "doctorsnotes",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

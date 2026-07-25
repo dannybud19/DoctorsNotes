@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+coverage/
+
+# next
+.next/
+out/
+
+# expo
+.expo/
+.expo-shared/
+*.tsbuildinfo
+
+# env / secrets — NEVER commit
+.env
+.env.*
+!.env.example
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# os / editor
+.DS_Store
+*.log
+.turbo/
