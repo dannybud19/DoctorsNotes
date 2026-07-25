@@ -87,6 +87,9 @@ Newest first. Append here whenever a non-obvious call is made.
 | D10 | **Synthetic fixtures only; PHI/BAA work is gated out until real data.** | Lets us build and test everything now with no real-patient risk. |
 | D11 | **Maintain this `PROJECT.md` as a living doc.** | Requested during cloud-plan review; the original source files were lost once — never again. |
 | D12 | **`reconcile()` validates `observedAt` for every claim, not just via the sort comparator.** | An independent test agent found a single-claim group could silently accept a bad timestamp (the comparator never runs for one element) — violating fail-loudly (§1.6). Hardened + locked with a regression test. |
+| D13 | **A turn with `roleConfidence: "unknown"` MUST NEVER mint a Claim.** `SpeakerRef.roleConfidence` (`confirmed \| inferred \| unknown`) is required on every claim's audio provenance. | Attributing words to a clinician who may not have said them breaks provenance — the core trust of the product. Unknown-role turns are held as *pending turns*, never converted to Claims. Enforced in Agent X's extractor and reviewed on every change. |
+| D14 | **Single React version workspace-wide (18.3.1) via `pnpm.overrides`; reconcile comparator locale pinned to `"en-US"`.** | Removes the react-dom@19/react@18 peer split; makes reconcile output ordering byte-identical across server and device. |
+| D15 | **Domain frozen for Wave 1 with `AdmissionPhase`, `AskResponse`, and supporting state types (`SavedQuestion`, `DueMedication`, `Encounter`, `PatientContext`).** | Agents consume these; freezing them up front prevents mid-wave shared-file churn. `DueMedication` is verbatim from a *confirmed* claim (D5); `AskResponse` empty `claimIds` can only be `no_source`. |
 
 **Open design decisions (for Schmidt / design):**
 - **Uncorroborated → question volume.** Every single-source claim currently becomes a "question to

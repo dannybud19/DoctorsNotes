@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ReconcileInput, type Claim, type ClaimGroup } from "@doctorsnotes/domain";
-import { reconcile } from "./reconcile.js";
-import { buildQuestions, buildRunningPicture } from "./views.js";
+import { reconcile } from "./reconcile";
+import { buildQuestions, buildRunningPicture } from "./views";
 import metoprololFixture from "./fixtures/metoprolol.json";
 import admissionFixture from "./fixtures/admission-5day.json";
 
@@ -55,14 +55,14 @@ describe("buildRunningPicture", () => {
   });
 
   it("passes the group's confirmation through unchanged", () => {
-    const aspirin = buildRunningPicture(admissionGroups).find((e) => e.subject === "aspirin")!;
-    expect(aspirin.confirmation).not.toBeNull();
-    expect(aspirin.confirmation!.id).toBe("conf-aspirin");
+    const metformin = buildRunningPicture(admissionGroups).find((e) => e.subject === "metformin")!;
+    expect(metformin.confirmation).not.toBeNull();
+    expect(metformin.confirmation!.id).toBe("conf-metformin");
 
-    const metoprolol = buildRunningPicture(admissionGroups).find(
-      (e) => e.subject === "metoprolol",
+    const aspirin = buildRunningPicture(admissionGroups).find(
+      (e) => e.subject === "aspirin",
     )!;
-    expect(metoprolol.confirmation).toBeNull();
+    expect(aspirin.confirmation).toBeNull();
   });
 
   it("has NO 'correct'/winner-style field — 'latest' is not treated as correct (§1.1)", () => {

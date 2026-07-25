@@ -1,5 +1,7 @@
 import metoprolol from "./metoprolol.json";
 import admission5day from "./admission-5day.json";
+import askResponses from "./ask-responses.json";
+import patientContexts from "./patient-contexts.json";
 
 /**
  * Synthetic, offline fixtures (AGENTS.md D10). Exported so consumers — including the mobile app —
@@ -11,4 +13,6 @@ import admission5day from "./admission-5day.json";
 export const fixtures = {
   metoprolol,
   admission5day,
+  askResponses,
+  patientContexts,
 } as const;

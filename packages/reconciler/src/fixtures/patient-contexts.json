@@ -1,0 +1,39 @@
+{
+  "inpatient": {
+    "patientId": "synthetic-patient-1",
+    "phase": "inpatient",
+    "lastOpenedAt": "2024-10-31T07:00:00Z",
+    "savedQuestions": [
+      { "id": "sq1", "prompt": "Am I close to going home?", "subject": "discharge", "savedAt": "2024-10-30T09:30:00Z" }
+    ],
+    "dueMedications": [],
+    "encounters": [
+      { "id": "e1", "recordingId": "rec-day2-ward-round", "occurredAt": "2024-10-29T09:00:00Z", "durationMs": 240000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Ahmed" }, "claimIds": [] },
+      { "id": "e2", "recordingId": "rec-day3-ward-round", "occurredAt": "2024-10-30T09:00:00Z", "durationMs": 300000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Ahmed" }, "claimIds": [] },
+      { "id": "e3", "recordingId": "rec-day3-nurse-obs", "occurredAt": "2024-10-30T14:00:00Z", "durationMs": 120000, "speaker": { "role": "nurse", "roleConfidence": "confirmed", "label": "Nurse Priya" }, "claimIds": [] },
+      { "id": "e4", "recordingId": "rec-day4-echo-review", "occurredAt": "2024-10-31T09:00:00Z", "durationMs": 300000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "claimIds": [] },
+      { "id": "e5", "recordingId": "rec-day5-discharge-consult", "occurredAt": "2024-11-01T09:10:00Z", "durationMs": 360000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "claimIds": ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"] }
+    ]
+  },
+  "recovering": {
+    "patientId": "synthetic-patient-1",
+    "phase": "recovering",
+    "lastOpenedAt": "2024-11-02T08:00:00Z",
+    "savedQuestions": [
+      { "id": "sq2", "prompt": "Should I be taking a water tablet? Dr Kelly said it wasn't decided yet.", "subject": "diuretic", "savedAt": "2024-11-01T18:10:00Z" },
+      { "id": "sq3", "prompt": "Is my aspirin 75mg or 150mg? What the doctor said and the letter don't match.", "subject": "aspirin", "savedAt": "2024-11-01T18:12:00Z" }
+    ],
+    "dueMedications": [
+      { "id": "dm1", "subject": "aspirin", "verbatimInstruction": "We're starting you on aspirin, one 75 milligram tablet once a day", "fromClaimId": "a2", "nextDueAt": "2024-11-02T09:00:00Z" },
+      { "id": "dm2", "subject": "lisinopril", "verbatimInstruction": "lisinopril, 10 milligrams once a day", "fromClaimId": "a3", "nextDueAt": "2024-11-02T09:00:00Z" },
+      { "id": "dm3", "subject": "metformin", "verbatimInstruction": "metformin ... 500 milligrams twice a day, morning and evening", "fromClaimId": "a4", "nextDueAt": "2024-11-02T09:00:00Z" }
+    ],
+    "encounters": [
+      { "id": "e1", "recordingId": "rec-day2-ward-round", "occurredAt": "2024-10-29T09:00:00Z", "durationMs": 240000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Ahmed" }, "claimIds": [] },
+      { "id": "e2", "recordingId": "rec-day3-ward-round", "occurredAt": "2024-10-30T09:00:00Z", "durationMs": 300000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Ahmed" }, "claimIds": [] },
+      { "id": "e3", "recordingId": "rec-day3-nurse-obs", "occurredAt": "2024-10-30T14:00:00Z", "durationMs": 120000, "speaker": { "role": "nurse", "roleConfidence": "confirmed", "label": "Nurse Priya" }, "claimIds": [] },
+      { "id": "e4", "recordingId": "rec-day4-echo-review", "occurredAt": "2024-10-31T09:00:00Z", "durationMs": 300000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "claimIds": [] },
+      { "id": "e5", "recordingId": "rec-day5-discharge-consult", "occurredAt": "2024-11-01T09:10:00Z", "durationMs": 360000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "claimIds": ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"] }
+    ]
+  }
+}

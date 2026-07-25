@@ -48,3 +48,20 @@ export const STATUS_ACCENT: Record<ClaimGroupStatus, { bg: string; text: string 
   worth_confirming: { bg: "#fdf3e7", text: "#8a4b0a" },
   uncorroborated: { bg: "#eef2f6", text: "#344054" },
 };
+
+/**
+ * Record button tokens. `active` is a deep red (white text ≈ 8:1, AAA) — the universally understood
+ * recording colour, unmistakably different from the calm blue idle state. This is a *state*, not an
+ * error accent.
+ */
+export const record = {
+  size: 140,
+  idle: colors.primary,
+  active: "#a01818",
+  onRecord: "#ffffff",
+  ringIdle: "#c9d6ef",
+  ringActive: "#e7b3b0",
+} as const;
+
+/** Confirmation states for a due-medication row. Never shaming; "needs confirming" is neutral. */
+export const NEEDS_CONFIRMING = { bg: "#fdf3e7", text: "#8a4b0a" } as const;
