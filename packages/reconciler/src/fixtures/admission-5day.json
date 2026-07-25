@@ -1,0 +1,219 @@
+{
+  "claims": [
+    {
+      "id": "a1",
+      "patientId": "synthetic-patient-1",
+      "category": "diagnosis-mention",
+      "subject": "heart-attack",
+      "verbatimText": "It looks like you've had a small heart attack — what we call an NSTEMI.",
+      "value": "small heart attack (NSTEMI)",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-mon-ward-round",
+        "startMs": 21000,
+        "endMs": 27000,
+        "speaker": { "role": "consultant", "label": "Dr Adeyemi, ward round" }
+      },
+      "observedAt": "2026-06-08T09:12:00Z"
+    },
+    {
+      "id": "a2",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "aspirin",
+      "verbatimText": "We're starting you on aspirin, 75mg once a day.",
+      "value": "75mg once daily",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-mon-ward-round",
+        "startMs": 61000,
+        "endMs": 65000,
+        "speaker": { "role": "consultant", "label": "Dr Adeyemi, ward round" }
+      },
+      "observedAt": "2026-06-08T09:14:00Z"
+    },
+    {
+      "id": "a3",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "metoprolol",
+      "verbatimText": "We'll also start metoprolol, 25 milligrams twice daily.",
+      "value": "25mg twice daily",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-mon-ward-round",
+        "startMs": 78000,
+        "endMs": 83000,
+        "speaker": { "role": "consultant", "label": "Dr Adeyemi, ward round" }
+      },
+      "observedAt": "2026-06-08T09:15:00Z"
+    },
+    {
+      "id": "a4",
+      "patientId": "synthetic-patient-1",
+      "category": "procedure-test",
+      "subject": "chest-xray",
+      "verbatimText": "We're going to get a chest X-ray this afternoon.",
+      "value": "chest x-ray this afternoon",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-tue-registrar",
+        "startMs": 15000,
+        "endMs": 19000,
+        "speaker": { "role": "registrar", "label": "Dr Okafor" }
+      },
+      "observedAt": "2026-06-09T11:02:00Z"
+    },
+    {
+      "id": "a5",
+      "patientId": "synthetic-patient-1",
+      "category": "result-finding",
+      "subject": "potassium",
+      "verbatimText": "Your potassium is 3.6, which is in the normal range.",
+      "value": "potassium 3.6",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-wed-nurse",
+        "startMs": 8000,
+        "endMs": 12000,
+        "speaker": { "role": "nurse", "label": "Nurse Bramwell" }
+      },
+      "observedAt": "2026-06-10T08:40:00Z"
+    },
+    {
+      "id": "a6",
+      "patientId": "synthetic-patient-1",
+      "category": "result-finding",
+      "subject": "potassium",
+      "verbatimText": "K+ 3.6 mmol/L",
+      "value": "potassium 3.6",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-obs-chart",
+        "page": 1,
+        "region": { "x": 0.08, "y": 0.31, "width": 0.4, "height": 0.03 }
+      },
+      "observedAt": "2026-06-10T08:55:00Z"
+    },
+    {
+      "id": "a7",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-change",
+      "subject": "furosemide",
+      "verbatimText": "Let's add furosemide, 20 milligrams each morning.",
+      "value": "add 20mg each morning",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-wed-registrar",
+        "startMs": 33000,
+        "endMs": 38000,
+        "speaker": { "role": "registrar", "label": "Dr Okafor" }
+      },
+      "observedAt": "2026-06-10T15:20:00Z"
+    },
+    {
+      "id": "a8",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "metoprolol",
+      "verbatimText": "We'll keep the metoprolol at 25 mg twice daily for now.",
+      "value": "25 mg twice daily",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-thu-registrar",
+        "startMs": 51000,
+        "endMs": 56000,
+        "speaker": { "role": "registrar", "label": "Dr Okafor" }
+      },
+      "observedAt": "2026-06-11T10:05:00Z"
+    },
+    {
+      "id": "a9",
+      "patientId": "synthetic-patient-1",
+      "category": "follow-up",
+      "subject": "cardiology-clinic",
+      "verbatimText": "You'll be seen again in the cardiology clinic in six weeks.",
+      "value": "cardiology clinic in 6 weeks",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-thu-nurse",
+        "startMs": 4000,
+        "endMs": 8000,
+        "speaker": { "role": "nurse", "label": "Nurse Bramwell" }
+      },
+      "observedAt": "2026-06-11T16:30:00Z"
+    },
+    {
+      "id": "a10",
+      "patientId": "synthetic-patient-1",
+      "category": "instruction",
+      "subject": "lifting",
+      "verbatimText": "Take it easy and avoid heavy lifting for a couple of weeks.",
+      "value": "avoid heavy lifting for a couple of weeks",
+      "source": {
+        "kind": "audio",
+        "recordingId": "rec-fri-physio",
+        "startMs": 12000,
+        "endMs": 17000,
+        "speaker": { "role": "physio", "label": "Sam, physiotherapy" }
+      },
+      "observedAt": "2026-06-12T10:10:00Z"
+    },
+    {
+      "id": "a11",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "aspirin",
+      "verbatimText": "Aspirin 75 mg once daily",
+      "value": "75 mg once daily",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-discharge-letter",
+        "page": 2,
+        "region": { "x": 0.12, "y": 0.38, "width": 0.5, "height": 0.03 }
+      },
+      "observedAt": "2026-06-12T15:45:00Z"
+    },
+    {
+      "id": "a12",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "metoprolol",
+      "verbatimText": "Metoprolol 50 mg once daily",
+      "value": "50mg once daily",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-discharge-letter",
+        "page": 2,
+        "region": { "x": 0.12, "y": 0.44, "width": 0.5, "height": 0.03 }
+      },
+      "observedAt": "2026-06-12T15:45:00Z"
+    },
+    {
+      "id": "a13",
+      "patientId": "synthetic-patient-1",
+      "category": "follow-up",
+      "subject": "cardiology-clinic",
+      "verbatimText": "Follow-up: cardiology clinic in 6 weeks.",
+      "value": "cardiology clinic in 6 weeks",
+      "source": {
+        "kind": "document",
+        "documentId": "doc-discharge-letter",
+        "page": 1,
+        "region": { "x": 0.1, "y": 0.7, "width": 0.55, "height": 0.03 }
+      },
+      "observedAt": "2026-06-12T15:45:00Z"
+    }
+  ],
+  "confirmations": [
+    {
+      "id": "conf-aspirin",
+      "patientId": "synthetic-patient-1",
+      "category": "medication-dose",
+      "subject": "aspirin",
+      "confirmedValue": "75mg once daily",
+      "fromClaimId": "a2",
+      "confirmedAt": "2026-06-12T18:00:00Z"
+    }
+  ]
+}
