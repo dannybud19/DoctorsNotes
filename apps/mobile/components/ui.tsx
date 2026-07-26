@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { Claim } from "@medthread/domain";
 import { formatDate, sourceKindLabel, sourceSummary } from "../app/lib/data";
 import { colors, font, HIT_SLOP, MIN_TOUCH, record, space } from "../app/lib/theme";
+import { ChevronIcon } from "./home/icons";
+import { actionSize, home } from "./home/palette";
 
 /** Screen shell with safe-area insets. Set `scroll` for long content. */
 export function Screen({ children, scroll }: { children: ReactNode; scroll?: boolean }) {
@@ -92,12 +94,17 @@ export function LabelledRow({ label, onPress }: { label: string; onPress: () => 
   );
 }
 
-/** Home greeting: a warm "Hi, {name}" header + the plain-language prompt beneath it. */
+/**
+ * Home greeting: a warm "Hi, {name}" header + the plain-language prompt beneath it.
+ *
+ * Centred, with the name in the home accent. Used by `app/index.tsx` only, which is why it carries
+ * the home palette rather than the shared theme.
+ */
 export function Greeting({ name }: { name: string }) {
   return (
     <View style={s.greeting}>
       <Text style={s.greetingHi} accessibilityRole="header">
-        Hi, {name}
+        Hi, <Text style={s.greetingName}>{name}</Text>
       </Text>
       <Text style={s.greetingSub}>What would you like to do today?</Text>
     </View>
@@ -105,18 +112,22 @@ export function Greeting({ name }: { name: string }) {
 }
 
 /**
- * A large, full-width home action with a WORD label (no icons). `primary` fills it with the brand
- * blue and white text — used for the single most important action on the screen. Comfortably exceeds
- * the elder-first touch minimum.
+ * A large, full-width home action: optional decorative icon, a WORD label, and a trailing chevron.
+ * The label alone carries the meaning — the icon is hidden from assistive tech — so this is never an
+ * icon-only control. Comfortably exceeds the elder-first touch minimum.
+ *
+ * `primary` is accepted but no longer changes the fill: the approved design gives all four home
+ * actions equal visual weight. Kept in the signature so existing callers keep compiling.
  */
 export function ActionButton({
   label,
   onPress,
-  primary,
+  icon,
 }: {
   label: string;
   onPress: () => void;
   primary?: boolean;
+  icon?: ReactNode;
 }) {
   return (
     <Pressable
@@ -124,9 +135,11 @@ export function ActionButton({
       hitSlop={HIT_SLOP}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={[s.action, primary ? s.actionPrimary : s.actionDefault]}
+      style={s.action}
     >
-      <Text style={[s.actionText, primary ? s.actionTextPrimary : null]}>{label}</Text>
+      {icon ? <View style={s.actionIcon}>{icon}</View> : null}
+      <Text style={s.actionText}>{label}</Text>
+      <ChevronIcon />
     </Pressable>
   );
 }
@@ -321,21 +334,38 @@ const s = StyleSheet.create({
   },
   rowLabel: { fontSize: font.label, fontWeight: "700", color: colors.text },
   rowMore: { fontSize: font.title, color: colors.textMuted },
-  greeting: { gap: space.xs, marginBottom: space.sm },
-  greetingHi: { fontSize: font.huge, fontWeight: "800", color: colors.text },
-  greetingSub: { fontSize: font.heading, color: colors.text, lineHeight: 32 },
+  // --- Home-only styles (Greeting + ActionButton). Both components are used by app/index.tsx alone,
+  // so the warm home palette lives here without affecting any other screen.
+  greeting: { gap: space.sm, marginBottom: space.lg, alignItems: "center" },
+  greetingHi: { fontSize: font.title, fontWeight: "700", color: home.ink, textAlign: "center" },
+  greetingName: { color: home.terracotta, fontWeight: "800" },
+  greetingSub: {
+    fontSize: font.huge,
+    fontWeight: "800",
+    color: home.ink,
+    textAlign: "center",
+    lineHeight: 42,
+  },
   action: {
-    minHeight: 76,
-    borderRadius: 16,
+    minHeight: actionSize.minHeight,
+    borderRadius: actionSize.radius,
+    borderWidth: 1,
+    borderColor: home.hairline,
+    backgroundColor: home.card,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: actionSize.gap,
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
+    // Soft lift off the cream background. `elevation` is the Android equivalent.
+    shadowColor: "#8a7f6d",
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
-  actionDefault: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  actionPrimary: { backgroundColor: colors.primary },
-  actionText: { fontSize: font.heading, fontWeight: "800", color: colors.text, textAlign: "center" },
-  actionTextPrimary: { color: colors.onPrimary },
+  actionIcon: { width: actionSize.iconSize, alignItems: "center", justifyContent: "center" },
+  actionText: { flex: 1, fontSize: font.heading, fontWeight: "800", color: home.ink },
   card: {
     borderRadius: 16,
     borderWidth: 1,
