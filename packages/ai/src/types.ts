@@ -62,6 +62,23 @@ export interface Explainer {
   explain(input: { verbatimText: string; question?: string }): Promise<{ explanation: string }>;
 }
 
+export interface DocumentExtractor {
+  /**
+   * Turns a photographed clinical document into verbatim, document-sourced Claims via Claude vision
+   * (no OCR library). `verbatimText` is copied EXACTLY from the document (never reworded); `source`
+   * carries documentId + 1-based page + a normalized region. With no OCR text to cross-check against,
+   * the model's transcription IS the provenance — it is instructed to copy character-for-character.
+   */
+  extractFromImage(input: {
+    patientId: string;
+    observedAt: string;
+    documentId: string;
+    page?: number;
+    image: ArrayBuffer;
+    mediaType: string;
+  }): Promise<{ claims: Claim[] }>;
+}
+
 export interface Asker {
   /**
    * Answers a patient's question by RETRIEVAL over the provided `groups` (reconciled ClaimGroup[])

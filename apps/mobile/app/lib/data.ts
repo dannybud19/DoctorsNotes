@@ -47,6 +47,12 @@ export const questions: Question[] = buildQuestions(groups);
 /** The full reconciled picture (ClaimGroup[]) — sent to /api/ask so retrieval runs over it. */
 export const claimGroups: ClaimGroup[] = groups;
 
+/** The spoken (audio) claims — the base an uploaded document merges into (incl. aspirin 75mg). */
+export const audioClaims: Claim[] = input.claims.filter((c) => c.source.kind === "audio");
+
+/** The sample document claims — the offline fallback for the upload flow (incl. aspirin 150mg). */
+export const documentFixtureClaims: Claim[] = input.claims.filter((c) => c.source.kind === "document");
+
 /**
  * Look up a subject entry by id. If a live session is active, resolve against its computed picture
  * so drill-downs work for live claims too; otherwise use the fixture picture.
