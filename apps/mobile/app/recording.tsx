@@ -176,12 +176,6 @@ export default function Recording() {
     else router.back();
   }
 
-  /** Back: instant when there is nothing to lose, confirmed while a recording is actually running. */
-  function requestBack() {
-    if (phase === "recording") setConfirmLeave(true);
-    else router.back();
-  }
-
   if (phase === "uploading") {
     // No back control here on purpose: this lasts a few seconds, and leaving would discard the
     // extraction that was just captured.
