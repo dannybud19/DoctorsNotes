@@ -35,6 +35,12 @@ import {
   type MoodCheckIn,
   type ReminderTimes,
 } from "./lib/patientData";
+import {
+  configureNotifications,
+  onReminderTapped,
+  requestReminderPermission,
+  syncReminders,
+} from "./lib/notify";
 
 // Screen 5 — Recovery home. Post-discharge; the discharge trigger routes here (RECOVERY_ROUTE).
 //
@@ -53,14 +59,31 @@ export default function Recovery() {
 
   // The clock times the PATIENT has set for their doses — the only source of reminder times.
   const [reminderTimes, setReminderTimes] = useState<ReminderTimes>({});
+
+  // Notifications, set up once: show reminders in the foreground, ask permission, and open the
+  // reminder screen for the dose the patient tapped.
+  useEffect(() => {
+    configureNotifications();
+    void requestReminderPermission();
+    return onReminderTapped((med, slot) => router.push(`/reminder?med=${med}&slot=${slot}`));
+  }, [router]);
+
+  // Load the patient's set times and (re)schedule reminders to match them.
   useEffect(() => {
     getReminderTimes()
-      .then(setReminderTimes)
+      .then((t) => {
+        setReminderTimes(t);
+        void syncReminders(dueMedications, t);
+      })
       .catch(() => {});
   }, []);
+
   function handleSetTime(subject: string, slot: number, time: string) {
     setReminderTime(subject, slot, time)
-      .then(setReminderTimes)
+      .then((t) => {
+        setReminderTimes(t);
+        void syncReminders(dueMedications, t);
+      })
       .catch(() => {});
   }
 

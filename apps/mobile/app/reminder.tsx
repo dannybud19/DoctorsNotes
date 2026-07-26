@@ -1,19 +1,29 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { HoldToConfirm } from "../components/ui";
 import { warm } from "../components/warm";
 import { WarmButton, WarmScreen } from "../components/warmUi";
 import { dueMedications, scheduleLabel, subjectLabel } from "./lib/data";
+import { addIntake } from "./lib/patientData";
 import { font, space } from "./lib/theme";
 
-// Screen 9 — Reminder. Full screen, hold-to-confirm, visible "Not now" escape.
+// Screen 9 — Reminder. Full screen, hold-to-confirm, visible "Not now" escape. Opened by a tapped
+// notification (which passes the dose via ?med=&slot=) or from the dashboard.
 //
-// `HoldToConfirm` is deliberately still the shared component from ui.tsx. It is the safety control
-// that records the patient confirming they took a dose, and its behaviour must not be reimplemented
-// for the sake of a colour change. It renders unmodified against the cream background.
+// `HoldToConfirm` is the safety control: holding records that the patient took THIS dose — an
+// adherence record they generate (patientData.addIntake), never a change to what the clinician said.
+// The clinician's verbatim words are the primary text.
 export default function Reminder() {
   const router = useRouter();
-  const med = dueMedications[0];
+  const params = useLocalSearchParams<{ med?: string; slot?: string }>();
+  const med = dueMedications.find((m) => m.subject === params.med) ?? dueMedications[0];
+  const slot = params.slot ? Number(params.slot) : 0;
+
+  function confirmTaken() {
+    // Record the patient's "I took it" (fire-and-forget — a storage hiccup must not block dismissal).
+    if (med) void addIntake(med.subject, slot);
+    router.back();
+  }
 
   return (
     <WarmScreen>
@@ -33,7 +43,7 @@ export default function Reminder() {
         ) : null}
 
         <View style={styles.actions}>
-          <HoldToConfirm label="Hold to confirm you've taken it" onComplete={() => router.back()} />
+          <HoldToConfirm label="Hold to confirm you've taken it" onComplete={confirmTaken} />
           <WarmButton label="Not now" variant="secondary" onPress={() => router.back()} />
         </View>
       </View>
