@@ -47,7 +47,6 @@ import {
 // to the admitted phase (Home) and back again — it replaces the old "Begin a hospital stay" button.
 export default function Recovery() {
   const router = useRouter();
-  const firstMed = dueMedications[0];
 
   // Subjects more than one person has described differently. Drives the banner's count.
   const worthConfirming = runningPicture.filter((e) => e.status === "worth_confirming").length;
@@ -122,10 +121,7 @@ export default function Recovery() {
             <Tile
               label={"More on\nyour meds"}
               icon={<PillIcon size={24} color={warm.terracotta} />}
-              onPress={() =>
-                firstMed &&
-                router.push(`/subject/${entryId(firstMed.claim.category, firstMed.subject)}`)
-              }
+              onPress={() => router.push("/meds")}
             />
             <Tile
               label={"Consultation\nhistory"}
