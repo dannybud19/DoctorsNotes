@@ -1,0 +1,9 @@
+# Generated native projects (Expo prebuild / `expo run:ios` / `expo run:android`).
+# These are regenerated from app.json + the config plugins — do not commit them.
+/ios/
+/android/
+
+# Expo local build/cache artifacts
+.expo/
+dist/
+web-build/
