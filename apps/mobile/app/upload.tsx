@@ -12,6 +12,7 @@ import {
 } from "../components/upload/icons";
 import { warm } from "../components/warm";
 import { audioClaims, documentFixtureClaims } from "./lib/data";
+import { setDischarged } from "./lib/dischargeState";
 import { setLiveClaims } from "./lib/liveSession";
 import { font, HIT_SLOP, MIN_TOUCH, space } from "./lib/theme";
 
@@ -76,6 +77,9 @@ export default function Upload() {
   /** Merge the extracted document claims with the spoken claims and hand off to the session view. */
   function showMerged(docClaims: Awaited<ReturnType<typeof extractDocument>>) {
     setLiveClaims([...audioClaims, ...docClaims]);
+    // A document (discharge letter) was processed → the patient is discharged. The session screen
+    // reads this and forwards to the recovery dashboard.
+    setDischarged(true);
     router.push("/session");
   }
 
@@ -143,6 +147,8 @@ export default function Upload() {
 
   function useSample() {
     setLiveClaims([...audioClaims, ...documentFixtureClaims]);
+    // The sample is a discharge summary, so the sample path discharges too.
+    setDischarged(true);
     router.push("/session");
   }
 

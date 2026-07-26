@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { BackButton, ClaimCard, Screen, SectionTitle } from "../components/ui";
 import {
@@ -9,6 +9,7 @@ import {
   sessionClaims as fixtureWhatChanged,
   subjectLabel,
 } from "./lib/data";
+import { isDischarged, RECOVERY_ROUTE } from "./lib/dischargeState";
 import { getLiveClaims } from "./lib/liveSession";
 import { colors, font, space, STATUS_LABEL } from "./lib/theme";
 
@@ -17,6 +18,13 @@ import { colors, font, space, STATUS_LABEL } from "./lib/theme";
 export default function Session() {
   const router = useRouter();
   const live = getLiveClaims();
+
+  // Discharge trigger: once a discharge document has been processed, the running picture forwards to
+  // the recovery dashboard. <Redirect> short-circuits render (no flash of this screen). When the two
+  // dashboards later become tab-slide siblings, this becomes "select the recovery tab" instead.
+  if (isDischarged()) {
+    return <Redirect href={RECOVERY_ROUTE} />;
+  }
 
   // Same three sections whether live or fixture — computed by the pure reconciler either way.
   const { whatChanged, picture, qs } = live
