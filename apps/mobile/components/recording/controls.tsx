@@ -57,7 +57,9 @@ export function PauseButton({ paused, onPress }: { paused: boolean; onPress: () 
       >
         {paused ? <PlayGlyph color={warm.terracotta} /> : <PauseGlyph color={warm.terracotta} />}
       </Pressable>
-      <Text style={styles.hint}>{paused ? "Resume" : "Pause"}</Text>
+      <Text style={styles.hint} numberOfLines={1}>
+        {paused ? "Resume" : "Pause"}
+      </Text>
     </View>
   );
 }
@@ -89,13 +91,15 @@ export function StopButton({
         <View style={[styles.fill, { height: `${Math.round(progress * 100)}%` }]} />
         <StopGlyph color={warm.terracotta} />
       </Pressable>
-      <Text style={styles.hint}>Hold to stop</Text>
+      <Text style={styles.hint} numberOfLines={1}>
+        Hold to stop
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: "center", gap: 6 },
+  wrap: { alignItems: "center", gap: 5 },
   button: {
     width: BUTTON,
     height: BUTTON,
@@ -108,5 +112,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   fill: { position: "absolute", left: 0, right: 0, bottom: 0, backgroundColor: "#f3ddd0" },
-  hint: { fontSize: 13, fontWeight: "600", color: warm.inkMuted },
+  // 12px keeps "Hold to stop" narrower than the 68px button, so the hint never widens the row.
+  hint: { fontSize: 12, fontWeight: "600", color: warm.inkMuted },
 });

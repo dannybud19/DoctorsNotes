@@ -277,35 +277,37 @@ function formatClock(ms: number): string {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: warm.cream },
-  content: { padding: space.lg, gap: space.md },
+  // Tight vertical rhythm: the capture cluster is one compact unit so the transcript below it gets
+  // the remaining screen. Horizontal padding stays generous.
+  content: { paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.lg, gap: 2 },
   date: { fontSize: font.label, fontWeight: "700", color: warm.inkMuted, textAlign: "center" },
 
-  /** Fixed height so the halo has room to swell without shifting the layout below it. */
-  stage: { height: 300, alignItems: "center", justifyContent: "center" },
-  controls: { flexDirection: "row", alignItems: "center", gap: space.md },
+  /** Just tall enough for the halo's widest swell; keeps the layout below from shifting. */
+  stage: { height: 208, alignItems: "center", justifyContent: "center" },
+  controls: { flexDirection: "row", alignItems: "center", gap: space.sm },
   capsule: {
-    minHeight: 76,
+    minHeight: 64,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: warm.hairline,
     backgroundColor: warm.card,
-    paddingHorizontal: space.lg,
+    paddingHorizontal: space.md,
     alignItems: "center",
     justifyContent: "center",
   },
 
   elapsed: {
-    fontSize: font.huge,
+    fontSize: font.title,
     fontWeight: "800",
     color: warm.ink,
     textAlign: "center",
     fontVariant: ["tabular-nums"],
   },
-  status: { fontSize: font.label, color: warm.inkMuted, textAlign: "center" },
+  status: { fontSize: 15, color: warm.inkMuted, textAlign: "center" },
 
-  divider: { height: 1, backgroundColor: warm.hairline, marginVertical: space.md },
-  /** Reserved for the live transcript. Keeps the scroll area from collapsing while empty. */
-  transcript: { minHeight: 120 },
+  divider: { height: 1, backgroundColor: warm.hairline, marginTop: space.md, marginBottom: space.sm },
+  /** Reserved for the live transcript — the tall region the compact header above frees up. */
+  transcript: { minHeight: 260 },
 
   center: { alignItems: "center", gap: space.md, paddingVertical: space.xl },
   big: { fontSize: font.heading, fontWeight: "800", color: warm.ink },
@@ -323,6 +325,6 @@ const styles = StyleSheet.create({
   primaryBtnText: { fontSize: font.label, fontWeight: "700", color: colors.onPrimary },
   secondaryBtn: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
   secondaryBtnText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
-  link: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
+  link: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center", marginTop: space.sm },
   linkText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
 });

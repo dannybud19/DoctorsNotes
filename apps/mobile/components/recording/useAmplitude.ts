@@ -26,13 +26,17 @@ const SAMPLE_MS = 100;
 /**
  * Metering is reported in dBFS. 0 dB is the loudest the mic can encode and −160 is digital silence,
  * but ordinary speech sits far above the floor, so mapping the full range would leave the halo
- * almost motionless. These bounds put conversational speech across most of the 0–1 range.
+ * almost motionless.
+ *
+ * This window is deliberately NARROW — a normal speaking voice at arm's length lands around −35 to
+ * −20 dBFS, so a wider window wastes most of the 0–1 range on levels a bedside conversation never
+ * reaches, and the halo barely moves. Widen `DB_QUIET` if a quiet room makes it twitch.
  */
-const DB_QUIET = -50;
-const DB_LOUD = -10;
+const DB_QUIET = -55;
+const DB_LOUD = -18;
 
-/** Weight of each new sample in the moving average. Lower = smoother, but laggier. */
-const SMOOTHING = 0.35;
+/** Weight of each new sample in the moving average. Higher = more responsive, but jumpier. */
+const SMOOTHING = 0.55;
 
 function normalizeDb(db: number): number {
   if (!Number.isFinite(db)) return 0;
@@ -60,19 +64,21 @@ export function useAmplitude(recorder: MeteringSource | null, active: boolean): 
       return;
     }
 
-    // Web: no metering exists, so breathe instead of sitting still.
+    // Web: no metering exists, so breathe instead of sitting still. The range is wide and the cycle
+    // brisk so the motion is clearly visible in the browser preview — this is the only feedback
+    // there is on web, so a subtle version reads as "broken".
     if (Platform.OS === "web") {
       const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(value, {
-            toValue: 0.62,
-            duration: 1500,
+            toValue: 0.95,
+            duration: 1150,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
           Animated.timing(value, {
-            toValue: 0.24,
-            duration: 1500,
+            toValue: 0.18,
+            duration: 1150,
             easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
