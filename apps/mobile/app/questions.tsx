@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { BackButton } from "../components/ui";
-import { WarmClaimCard, WarmScreen } from "../components/warmUi";
+import { WarmBack, WarmClaimCard, WarmScreen } from "../components/warmUi";
 import { warm } from "../components/warm";
 import { entryId, questions } from "./lib/data";
 import { font, space } from "./lib/theme";
@@ -13,7 +12,7 @@ export default function Questions() {
 
   return (
     <WarmScreen scroll>
-      <BackButton onPress={() => router.back()} />
+      <WarmBack onPress={() => router.back()} />
       <Text style={styles.h1}>Questions to clarify</Text>
       {questions.length === 0 ? (
         <Text style={styles.body}>Nothing to ask about right now.</Text>
