@@ -7,7 +7,7 @@
  * (AGENTS.md §1.3, §1.4). Everything below runs once, at module load.
  */
 import { ReconcileInput } from "@doctorsnotes/domain";
-import type { Claim, ClaimSource } from "@doctorsnotes/domain";
+import type { Claim, ClaimGroup, ClaimSource } from "@doctorsnotes/domain";
 import {
   buildQuestions,
   buildRunningPicture,
@@ -43,6 +43,9 @@ export const runningPicture: PictureEntry[] = buildRunningPicture(groups).map((e
 }));
 
 export const questions: Question[] = buildQuestions(groups);
+
+/** The full reconciled picture (ClaimGroup[]) — sent to /api/ask so retrieval runs over it. */
+export const claimGroups: ClaimGroup[] = groups;
 
 /**
  * Look up a subject entry by id. If a live session is active, resolve against its computed picture

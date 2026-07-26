@@ -3,7 +3,7 @@
  * Concrete providers (ElevenLabs Scribe, Claude) implement these; the interface keeps them swappable
  * and keeps provider SDKs out of the mobile bundle.
  */
-import type { Claim } from "@doctorsnotes/domain";
+import type { AskResponse, Claim, ClaimGroup } from "@doctorsnotes/domain";
 
 export interface TranscriptWord {
   text: string;
@@ -60,4 +60,14 @@ export interface ClaimExtractor {
 
 export interface Explainer {
   explain(input: { verbatimText: string; question?: string }): Promise<{ explanation: string }>;
+}
+
+export interface Asker {
+  /**
+   * Answers a patient's question by RETRIEVAL over the provided `groups` (reconciled ClaimGroup[])
+   * ONLY. The model selects which existing claims are relevant and phrases the gap; it NEVER
+   * generates a medical fact. If no provided claim is relevant — or the model returns no usable claim
+   * ids — the result is `no_source` (never `answered`/`partial`). See `resolveAskResponse`.
+   */
+  ask(input: { question: string; groups: ClaimGroup[] }): Promise<AskResponse>;
 }
