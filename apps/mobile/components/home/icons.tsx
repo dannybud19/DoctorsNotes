@@ -8,7 +8,7 @@
  * All icons share a 24x24 coordinate space and a stroked (not filled) style, so they read as one set.
  */
 import Svg, { Circle, Path, Rect } from "react-native-svg";
-import { home } from "./palette";
+import { warm } from "../warm";
 
 type IconProps = { size?: number; color?: string };
 
@@ -23,7 +23,7 @@ function Icon({ size, color, children }: IconProps & { children: React.ReactNode
       height={size ?? DEFAULT_SIZE}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={color ?? home.terracotta}
+      stroke={color ?? warm.terracotta}
       strokeWidth={STROKE}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -84,7 +84,7 @@ export function ChevronIcon({ size = 22, color }: IconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={color ?? home.terracotta}
+      stroke={color ?? warm.terracotta}
       strokeWidth={2.6}
       strokeLinecap="round"
       strokeLinejoin="round"
