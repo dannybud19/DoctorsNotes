@@ -36,21 +36,25 @@ export default function EncounterDetail() {
       <WarmRow label="Length" value={`${Math.round(enc.durationMs / 60000)} min`} />
 
       <WarmSectionTitle>Transcript — extracted claims highlighted</WarmSectionTitle>
-      {enc.claimIds.map((cid) => {
-        const c = getClaim(cid);
-        return c ? (
-          <View key={cid} style={styles.claim}>
-            <Text style={styles.verbatim}>
-              {"“"}
-              {c.verbatimText}
-              {"”"}
-            </Text>
-            <Text style={styles.meta}>
-              {c.category} · {c.subject}
-            </Text>
-          </View>
-        ) : null;
-      })}
+      {enc.claimIds.length === 0 ? (
+        <Text style={styles.empty}>No transcript was captured for this visit.</Text>
+      ) : (
+        enc.claimIds.map((cid) => {
+          const c = getClaim(cid);
+          return c ? (
+            <View key={cid} style={styles.claim}>
+              <Text style={styles.verbatim}>
+                {"“"}
+                {c.verbatimText}
+                {"”"}
+              </Text>
+              <Text style={styles.meta}>
+                {c.category} · {c.subject}
+              </Text>
+            </View>
+          ) : null;
+        })
+      )}
     </WarmScreen>
   );
 }
@@ -75,4 +79,5 @@ const styles = StyleSheet.create({
   },
   verbatim: { fontSize: font.body, color: warm.ink, lineHeight: 30 },
   meta: { fontSize: font.label, color: warm.inkMuted },
+  empty: { fontSize: font.body, color: warm.inkMuted, lineHeight: 30 },
 });

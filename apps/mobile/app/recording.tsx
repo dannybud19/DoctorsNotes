@@ -10,14 +10,14 @@ import { useAmplitude } from "../components/recording/useAmplitude";
 import { warm } from "../components/warm";
 import { WarmBack } from "../components/warmUi";
 import { todayLabel } from "./lib/data";
-import { clearLiveClaims, setLiveClaims } from "./lib/liveSession";
+import { setLiveClaims } from "./lib/liveSession";
 import { colors, font, HIT_SLOP, MIN_TOUCH, space } from "./lib/theme";
 
 type Phase = "starting" | "recording" | "uploading" | "error";
 
 // Screen 2 — Recording (LIVE). Records real audio, uploads to /api/extract on hold-to-stop, then
-// navigates to the session screen which renders the returned claims. On failure, a sample fallback
-// keeps the demo working with no network.
+// navigates to the session screen which renders the returned claims. On failure, the error screen
+// offers a retry — recording is the only path (no sample fallback).
 //
 // The capture pipeline below is unchanged from the original screen; this revision adds pause/resume
 // and the warm visual treatment. Two functional notes:
@@ -57,7 +57,7 @@ export default function Recording() {
       try {
         const perm = await AudioModule.requestRecordingPermissionsAsync();
         if (!perm.granted) {
-          if (active) fail("Microphone access is needed to record. You can still use a sample session.");
+          if (active) fail("Microphone access is needed to record a consultation.");
           return;
         }
         await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -170,11 +170,6 @@ export default function Recording() {
     setHoldProgress(0);
   }
 
-  function useSample() {
-    clearLiveClaims();
-    router.replace("/session");
-  }
-
   /** Back: instant when there is nothing to lose, confirmed while a recording is actually running. */
   function requestBack() {
     if (phase === "recording") setConfirmLeave(true);
@@ -203,22 +198,13 @@ export default function Recording() {
           <Text style={styles.errorTitle}>We couldn't process that recording</Text>
           <Text style={styles.errorMsg}>{errorMsg}</Text>
           <Pressable
-            onPress={useSample}
-            hitSlop={HIT_SLOP}
-            accessibilityRole="button"
-            accessibilityLabel="Use a sample session instead"
-            style={styles.primaryBtn}
-          >
-            <Text style={styles.primaryBtnText}>Use sample session</Text>
-          </Pressable>
-          <Pressable
             onPress={() => router.replace("/recording")}
             hitSlop={HIT_SLOP}
             accessibilityRole="button"
             accessibilityLabel="Try recording again"
-            style={styles.secondaryBtn}
+            style={styles.primaryBtn}
           >
-            <Text style={styles.secondaryBtnText}>Try again</Text>
+            <Text style={styles.primaryBtnText}>Try again</Text>
           </Pressable>
         </View>
       </Shell>
@@ -291,16 +277,6 @@ export default function Recording() {
         clinician actually said.
       */}
       <View style={styles.transcript} />
-
-      <Pressable
-        onPress={useSample}
-        hitSlop={HIT_SLOP}
-        accessibilityRole="button"
-        accessibilityLabel="Use a sample session instead"
-        style={styles.link}
-      >
-        <Text style={styles.linkText}>Use sample session</Text>
-      </Pressable>
     </Shell>
   );
 }
@@ -386,6 +362,4 @@ const styles = StyleSheet.create({
   primaryBtnText: { fontSize: font.label, fontWeight: "700", color: colors.onPrimary },
   secondaryBtn: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
   secondaryBtnText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
-  link: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center", marginTop: space.sm },
-  linkText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
 });

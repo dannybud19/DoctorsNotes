@@ -8,7 +8,6 @@ import {
   entryId,
   questions as fixtureQuestions,
   runningPicture as fixturePicture,
-  sessionClaims as fixtureWhatChanged,
   sessionTranscript,
   subjectLabel,
   transcriptView,
@@ -23,14 +22,18 @@ import { font, space, STATUS_LABEL } from "./lib/theme";
 export default function Session() {
   const router = useRouter();
   const live = getLiveClaims();
+  const liveTranscript = getLiveTranscript();
 
-  // Same three reconciled sections whether live or fixture — computed by the pure reconciler.
-  const { whatChanged, picture, qs } = live
+  // The reconciled sections — computed by the pure reconciler whether live or fixture.
+  const { picture, qs } = live
     ? buildSession(live)
-    : { whatChanged: fixtureWhatChanged, picture: fixturePicture, qs: fixtureQuestions };
+    : { picture: fixturePicture, qs: fixtureQuestions };
 
-  // The conversation as bubbles: the live recording's own turns when present, else the sample.
-  const bubbles = transcriptView(getLiveTranscript() ?? sessionTranscript);
+  // The conversation as bubbles. Only shown when we actually have this session's transcript: the
+  // fixture sample, or a live recording that carried its own turns. A live recording with no live
+  // transcript must NOT borrow the sample conversation — that would attribute a stranger's words to
+  // the patient's own recording under a "Live" badge. (Live turns are wired in a later change.)
+  const bubbles = live && !liveTranscript ? [] : transcriptView(liveTranscript ?? sessionTranscript);
 
   const open = (category: string, subject: string) =>
     router.push(`/subject/${entryId(category, subject)}`);
@@ -47,14 +50,18 @@ export default function Session() {
         </View>
       </View>
 
-      <WarmSectionTitle>What was said</WarmSectionTitle>
-      <View style={styles.transcript}>
-        {bubbles.map((b) => (
-          <TranscriptBubble key={b.id} speaker={b.speaker} side={b.side}>
-            <Text style={styles.turnText}>{b.text}</Text>
-          </TranscriptBubble>
-        ))}
-      </View>
+      {bubbles.length > 0 ? (
+        <>
+          <WarmSectionTitle>What was said</WarmSectionTitle>
+          <View style={styles.transcript}>
+            {bubbles.map((b) => (
+              <TranscriptBubble key={b.id} speaker={b.speaker} side={b.side}>
+                <Text style={styles.turnText}>{b.text}</Text>
+              </TranscriptBubble>
+            ))}
+          </View>
+        </>
+      ) : null}
 
       <WarmSectionTitle>Questions worth asking</WarmSectionTitle>
       {qs.length === 0 ? (

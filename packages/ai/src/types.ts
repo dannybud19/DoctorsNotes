@@ -58,8 +58,25 @@ export interface ClaimExtractor {
   }): Promise<{ claims: Claim[]; pendingTurns: number }>;
 }
 
+/** One reputable source backing an explanation — shown to the patient as attribution. */
+export interface ExplainSource {
+  title: string;
+  url: string;
+}
+
 export interface Explainer {
-  explain(input: { verbatimText: string; question?: string }): Promise<{ explanation: string }>;
+  /**
+   * General, plain-language "what this medicine is / what it's for" for a named subject, drawn from
+   * reputable web sources via search. This is the app's ONE place that surfaces information the
+   * patient's own clinicians didn't state — so it is strictly GENERAL education: never personalised
+   * advice, dosing, or a judgement about this patient. `explanation` states only facts the model could
+   * attribute; `sources` carries the citations shown alongside it. An empty `explanation`/`sources`
+   * means no reliable general information was found — the UI must say so, never invent one.
+   */
+  explain(input: { subject: string; verbatimText: string }): Promise<{
+    explanation: string;
+    sources: ExplainSource[];
+  }>;
 }
 
 export interface DocumentExtractor {

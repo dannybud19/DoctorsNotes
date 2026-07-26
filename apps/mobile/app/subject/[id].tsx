@@ -1,7 +1,7 @@
 import type { Claim } from "@medthread/domain";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { warm } from "../../components/warm";
 import { WarmBack, WarmScreen } from "../../components/warmUi";
 import { formatDate, getEntry, sourceKindLabel, sourceSummary, subjectLabel } from "../lib/data";
@@ -10,11 +10,25 @@ import { font, HIT_SLOP, MIN_TOUCH, space, STATUS_LABEL } from "../lib/theme";
 
 // Subject detail — the drill-down. The clinician's VERBATIM words are the primary text; the
 // plain-language explanation is opt-in and clearly marked; provenance is always shown.
+//
+// "What does this mean?" behaves in one of two ways, and the two are never blended:
+//   - For a MEDICATION, it fetches GENERAL info from the web via /api/explain, shown under a hard
+//     "not from your care team · not medical advice" label with its sources. Empty → we say we
+//     couldn't find reliable info, never an invented one.
+//   - For other jargon, it shows the local canned explanation ("explains the words only").
+type ExplainState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "done"; text: string; sources: Array<{ title: string; url: string }> }
+  | { status: "empty" }
+  | { status: "error" };
+
 export default function SubjectDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const entry = id ? getEntry(id) : undefined;
   const [showExplain, setShowExplain] = useState(false);
+  const [live, setLive] = useState<ExplainState>({ status: "idle" });
 
   if (!entry) {
     return (
@@ -26,42 +40,109 @@ export default function SubjectDetail() {
     );
   }
 
-  const explanation = explainSubject(entry.subject);
+  const isMedication = entry.category === "medication-dose" || entry.category === "medication-change";
+  const canned = explainSubject(entry.subject);
+
+  async function loadLiveExplain(): Promise<void> {
+    if (!entry) return;
+    setLive({ status: "loading" });
+    try {
+      const apiBase = process.env.EXPO_PUBLIC_API_URL;
+      if (!apiBase) throw new Error("EXPO_PUBLIC_API_URL is not set.");
+      const res = await fetch(`${apiBase}/api/explain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: entry.subject, verbatimText: entry.latest.verbatimText }),
+      });
+      const data = (await res.json()) as {
+        explanation?: string;
+        sources?: Array<{ title: string; url: string }>;
+      };
+      // No attributed source → treat as "no reliable info"; never show an unsourced medical statement.
+      if (!res.ok || !data.explanation || !data.sources?.length) {
+        setLive({ status: "empty" });
+        return;
+      }
+      setLive({ status: "done", text: data.explanation, sources: data.sources });
+    } catch {
+      setLive({ status: "error" });
+    }
+  }
+
+  function toggleExplain(): void {
+    const next = !showExplain;
+    setShowExplain(next);
+    if (next && isMedication && live.status === "idle") void loadLiveExplain();
+  }
 
   return (
     <WarmScreen scroll>
       <WarmBack onPress={() => router.back()} />
-        <Text style={styles.h1} accessibilityRole="header">
-          {subjectLabel(entry.subject)}
+      <Text style={styles.h1} accessibilityRole="header">
+        {subjectLabel(entry.subject)}
+      </Text>
+      <Text style={styles.status}>{STATUS_LABEL[entry.status]}</Text>
+
+      {entry.confirmation ? (
+        <View style={styles.confirm}>
+          <Text style={styles.confirmText}>You confirmed: {entry.confirmation.confirmedValue}</Text>
+        </View>
+      ) : null}
+
+      <Pressable
+        onPress={toggleExplain}
+        hitSlop={HIT_SLOP}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: showExplain }}
+        accessibilityLabel="What does this mean?"
+        style={styles.explainToggle}
+      >
+        <Text style={styles.explainToggleText}>
+          {showExplain ? "Hide explanation" : "What does this mean?"}
         </Text>
-        <Text style={styles.status}>{STATUS_LABEL[entry.status]}</Text>
+      </Pressable>
 
-        {entry.confirmation ? (
-          <View style={styles.confirm}>
-            <Text style={styles.confirmText}>You confirmed: {entry.confirmation.confirmedValue}</Text>
+      {showExplain ? (
+        isMedication ? (
+          <View style={styles.explainBox}>
+            <Text style={styles.explainLabel}>
+              General information from the web — not from your care team · not medical advice
+            </Text>
+            {live.status === "loading" ? (
+              <Text style={styles.explainText}>Looking this up…</Text>
+            ) : live.status === "done" ? (
+              <>
+                <Text style={styles.explainText}>{live.text}</Text>
+                <Text style={styles.sourcesLabel}>Sources</Text>
+                {live.sources.map((s) => (
+                  <Pressable
+                    key={s.url}
+                    onPress={() => void Linking.openURL(s.url)}
+                    hitSlop={HIT_SLOP}
+                    accessibilityRole="link"
+                    accessibilityLabel={`Open source: ${s.title}`}
+                  >
+                    <Text style={styles.sourceLink}>{s.title}</Text>
+                  </Pressable>
+                ))}
+              </>
+            ) : live.status === "empty" ? (
+              <Text style={styles.explainText}>
+                We couldn't find reliable general information about this medicine.
+              </Text>
+            ) : (
+              <Text style={styles.explainText}>We couldn't load this right now. Please try again.</Text>
+            )}
           </View>
-        ) : null}
-
-        <Pressable
-          onPress={() => setShowExplain((v) => !v)}
-          hitSlop={HIT_SLOP}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: showExplain }}
-          accessibilityLabel="What does this mean?"
-          style={styles.explainToggle}
-        >
-          <Text style={styles.explainToggleText}>
-            {showExplain ? "Hide explanation" : "What does this mean?"}
-          </Text>
-        </Pressable>
-        {showExplain ? (
+        ) : (
           <View style={styles.explainBox}>
             <Text style={styles.explainLabel}>Plain-language explanation — explains the words only</Text>
             <Text style={styles.explainText}>
-              {explanation ?? "No plain-language explanation is available yet."}
+              {canned ?? "No plain-language explanation is available yet."}
             </Text>
           </View>
-        ) : null}
+        )
+      ) : null}
 
       <Text style={styles.trailHeading}>What was said, in order</Text>
       {entry.trail.map((claim) => (
@@ -124,8 +205,23 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: warm.inkMuted,
     textTransform: "uppercase",
+    lineHeight: 20,
   },
   explainText: { fontSize: font.body, lineHeight: 30, color: warm.ink },
+  sourcesLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: warm.inkMuted,
+    textTransform: "uppercase",
+    marginTop: space.xs,
+  },
+  sourceLink: {
+    fontSize: font.label,
+    fontWeight: "700",
+    color: warm.terracotta,
+    minHeight: MIN_TOUCH,
+    lineHeight: 30,
+  },
   trailHeading: {
     fontSize: font.heading,
     fontWeight: "800",

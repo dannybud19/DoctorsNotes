@@ -13,11 +13,12 @@
   },
   "//": "ZERO AI dependencies here — enforced by dependency-cruiser (AGENTS.md §2). Capture deps (expo-audio/expo-camera/expo-sqlite) are added with the capture feature; this scaffold only needs to boot.",
   "dependencies": {
-    "@babel/runtime": "^8.0.0",
+    "@babel/runtime": "^7.25.0",
     "@expo/metro-runtime": "~4.0.1",
     "@medthread/domain": "workspace:*",
     "@medthread/reconciler": "workspace:*",
     "@medthread/supabase": "workspace:*",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "expo": "~52.0.0",
     "expo-audio": "~0.3.5",
     "expo-constants": "~17.0.0",

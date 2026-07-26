@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DottedPath } from "../components/home/DottedPath";
@@ -20,8 +20,11 @@ import { font, HIT_SLOP, space } from "./lib/theme";
 // here changes where the four actions navigate.
 export default function Home() {
   const router = useRouter();
-  // `bump` re-renders after the demo toggle flips the (module-level) discharge flag.
   const [, bump] = useState(0);
+  // Re-read the module-level discharge flag whenever Home regains focus, so the PhaseSwitch (and the
+  // demo label) reflect the current phase even when a pre-discharge Home instance lingers in the
+  // navigation stack (e.g. after the upload → recovery path, then swipe-back).
+  useFocusEffect(useCallback(() => bump((n) => n + 1), []));
   const discharged = isDischarged();
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
@@ -55,24 +58,26 @@ export default function Home() {
         </View>
 
         {/* DEMO-ONLY: flips the discharge phase with no backend, so the Home ⇄ Recovery toggle is
-            reachable in an offline demo. Remove before production. */}
-        <Pressable
-          onPress={() => {
-            if (discharged) {
-              clearDischarge();
-              bump((n) => n + 1);
-            } else {
-              setDischarged(true);
-              router.replace(RECOVERY_ROUTE);
-            }
-          }}
-          hitSlop={HIT_SLOP}
-          accessibilityRole="button"
-          accessibilityLabel={discharged ? "Reset demo" : "Simulate discharge for the demo"}
-          style={styles.demo}
-        >
-          <Text style={styles.demoText}>{discharged ? "Reset demo" : "Simulate discharge (demo)"}</Text>
-        </Pressable>
+            reachable in an offline demo. Gated behind __DEV__ so it never appears in a store build. */}
+        {__DEV__ ? (
+          <Pressable
+            onPress={() => {
+              if (discharged) {
+                clearDischarge();
+                bump((n) => n + 1);
+              } else {
+                setDischarged(true);
+                router.replace(RECOVERY_ROUTE);
+              }
+            }}
+            hitSlop={HIT_SLOP}
+            accessibilityRole="button"
+            accessibilityLabel={discharged ? "Reset demo" : "Simulate discharge for the demo"}
+            style={styles.demo}
+          >
+            <Text style={styles.demoText}>{discharged ? "Reset demo" : "Simulate discharge (demo)"}</Text>
+          </Pressable>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

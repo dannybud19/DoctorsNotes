@@ -2,7 +2,7 @@
   "questions": [
     {
       "id": "gq0",
-      "prompt": "How much damage was done to my heart, and do you know my ejection fraction?",
+      "prompt": "You said my heart is stable now — how much damage was done, and what does 'stable' mean for my day-to-day life?",
       "fromClaimIds": ["a1"]
     },
     {

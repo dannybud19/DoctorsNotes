@@ -6,6 +6,7 @@ import type {
   ClaimGroupStatus,
   Confirmation,
 } from "@medthread/domain";
+import { deriveDoseSlots, type DoseSlot } from "./schedule";
 
 /**
  * Pure, derived VIEW builders over reconciled groups.
@@ -123,6 +124,113 @@ export function buildQuestions(groups: ClaimGroup[]): QuestionList {
 /** Turn a normalized subject key ("cardiology-clinic") into readable words ("cardiology clinic"). */
 function humanizeSubject(subject: string): string {
   return subject.replace(/-/g, " ").trim();
+}
+
+// ---------------------------------------------------------------------------------------------
+// buildMedicationSchedule — the data-backed basis for reminders
+// ---------------------------------------------------------------------------------------------
+
+/** The categories that describe a medication the patient takes. */
+const MEDICATION_CATEGORIES: ReadonlyArray<ClaimCategory> = ["medication-dose", "medication-change"];
+
+/**
+ * A medication we CAN remind about: it has a patient `Confirmation` (D5 — reminders never fire from
+ * inference) and a frequency we could parse from the confirmed value. Carries the confirmed claim's
+ * verbatim words (primary card text) and the parsed dose slots. No clock times — the patient sets
+ * those; a slot is only labelled when the confirmed value stated a time of day.
+ */
+export interface MedReminder {
+  subject: string;
+  /** The confirmed claim this reminder is anchored to (`Confirmation.fromClaimId`). */
+  fromClaimId: string;
+  /** Verbatim words of the confirmed claim — shown as the primary text, never reworded. */
+  verbatimInstruction: string;
+  /** The confirmed value the slots were parsed from (e.g. "500mg twice daily"). */
+  confirmedValue: string;
+  slots: DoseSlot[];
+}
+
+/** Why a medication cannot (yet) become a reminder — a knowledge gap to raise, never a guess. */
+export type MedicationGapReason = "unconfirmed" | "no_frequency";
+
+/**
+ * A medication that is NOT turned into a reminder because the information isn't there — either the
+ * patient hasn't confirmed which dose is current (`unconfirmed`), or the confirmed value states no
+ * recognisable frequency (`no_frequency`). Surfaced as a question, phrased to ask (never advice),
+ * linking back to the verbatim claims.
+ */
+export interface MedicationGap {
+  subject: string;
+  category: ClaimCategory;
+  reason: MedicationGapReason;
+  /** Phrased as a question to ask a clinician. Never an instruction or assessment. */
+  prompt: string;
+  fromClaims: Claim[];
+}
+
+/**
+ * Split the medication groups into reminders we can back with data and gaps we must ask about. A
+ * medication becomes a reminder ONLY when it has a `Confirmation` AND `deriveDoseSlots` can read a
+ * frequency from the confirmed value; everything else is a gap (the knowledge-gap rule). Non-medication
+ * groups are ignored. Order follows the reconciler's deterministic group order.
+ */
+export function buildMedicationSchedule(groups: ClaimGroup[]): {
+  reminders: MedReminder[];
+  gaps: MedicationGap[];
+} {
+  const reminders: MedReminder[] = [];
+  const gaps: MedicationGap[] = [];
+
+  for (const group of groups) {
+    if (!MEDICATION_CATEGORIES.includes(group.category)) continue;
+    const label = humanizeSubject(group.subject);
+
+    // D5: without a patient Confirmation we may not fire a reminder — ask which dose is current.
+    if (!group.confirmation) {
+      gaps.push({
+        subject: group.subject,
+        category: group.category,
+        reason: "unconfirmed",
+        prompt: `Which dose of my ${label} is current for me now?`,
+        fromClaims: group.claims,
+      });
+      continue;
+    }
+
+    const confirmedValue = group.confirmation.confirmedValue;
+    const parsed = deriveDoseSlots(confirmedValue);
+
+    // Confirmed, but the value states no frequency we can schedule — ask how often, don't guess.
+    if ("unknown" in parsed) {
+      gaps.push({
+        subject: group.subject,
+        category: group.category,
+        reason: "no_frequency",
+        prompt: `How often is my ${label} meant to be taken?`,
+        fromClaims: group.claims,
+      });
+      continue;
+    }
+
+    const anchor =
+      group.claims.find((c) => c.id === group.confirmation!.fromClaimId) ??
+      group.claims[group.claims.length - 1];
+    if (!anchor) {
+      throw new InvariantError(
+        `buildMedicationSchedule(): group ${group.category}/${group.subject} has no claims`,
+      );
+    }
+
+    reminders.push({
+      subject: group.subject,
+      fromClaimId: group.confirmation.fromClaimId,
+      verbatimInstruction: anchor.verbatimText,
+      confirmedValue,
+      slots: parsed.slots,
+    });
+  }
+
+  return { reminders, gaps };
 }
 
 // A prompt must never read as advice: the safety test forbids these verbs (views.test.ts). When a

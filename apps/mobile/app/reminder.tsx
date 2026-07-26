@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { HoldToConfirm } from "../components/ui";
 import { warm } from "../components/warm";
 import { WarmButton, WarmScreen } from "../components/warmUi";
-import { dueMedications, subjectLabel } from "./lib/data";
+import { dueMedications, scheduleLabel, subjectLabel } from "./lib/data";
 import { font, space } from "./lib/theme";
 
 // Screen 9 — Reminder. Full screen, hold-to-confirm, visible "Not now" escape.
@@ -18,7 +18,9 @@ export default function Reminder() {
   return (
     <WarmScreen>
       <View style={styles.full}>
-        <Text style={styles.time}>{med ? med.time : "Now"}</Text>
+        <Text style={styles.time}>
+          {med && med.status === "scheduled" ? scheduleLabel(med.slots) : "Now"}
+        </Text>
         <Text style={styles.h1} accessibilityRole="header">
           Time to take your {med ? subjectLabel(med.subject) : "medication"}
         </Text>

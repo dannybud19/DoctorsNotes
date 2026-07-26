@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ReconcileInput, type Claim, type ClaimGroup } from "@medthread/domain";
 import { reconcile } from "./reconcile";
-import { buildQuestions, buildRunningPicture } from "./views";
+import { buildMedicationSchedule, buildQuestions, buildRunningPicture } from "./views";
 import metoprololFixture from "./fixtures/metoprolol.json";
 import admissionFixture from "./fixtures/admission-5day.json";
 
@@ -143,6 +143,49 @@ describe("buildQuestions", () => {
       for (const key of Object.keys(q)) {
         expect(key).not.toMatch(forbidden);
       }
+    }
+  });
+});
+
+describe("buildMedicationSchedule", () => {
+  const schedule = buildMedicationSchedule(admissionGroups);
+
+  it("emits a reminder ONLY for a confirmed medication (D5), with slots parsed from the confirmed value", () => {
+    // metformin is the only confirmed med (conf-metformin, 500mg twice daily → 2 doses).
+    expect(schedule.reminders.map((r) => r.subject)).toEqual(["metformin"]);
+    const metformin = schedule.reminders[0]!;
+    expect(metformin.slots).toEqual([{}, {}]); // twice daily, no stated time of day → unlabelled
+    expect(metformin.fromClaimId).toBe("a4"); // the confirmed claim
+    expect(metformin.confirmedValue).toBe("500mg twice daily");
+    expect(metformin.verbatimInstruction).toContain("metformin"); // verbatim of the confirmed claim
+  });
+
+  it("turns every UNCONFIRMED medication into a knowledge gap, never a reminder", () => {
+    const gapSubjects = schedule.gaps.map((g) => g.subject).sort();
+    // aspirin (75 vs 150), lisinopril (agreed but unconfirmed), diuretic (undecided) — all lack a Confirmation.
+    expect(gapSubjects).toEqual(["aspirin", "diuretic", "lisinopril"]);
+    for (const gap of schedule.gaps) {
+      expect(gap.reason).toBe("unconfirmed");
+      expect(gap.subject).not.toBe("metformin");
+    }
+  });
+
+  it("ignores non-medication groups entirely", () => {
+    const medSubjects = new Set([
+      ...schedule.reminders.map((r) => r.subject),
+      ...schedule.gaps.map((g) => g.subject),
+    ]);
+    // No follow-ups, instructions or diagnoses leak into the schedule.
+    for (const s of ["heart-attack", "activity", "cardiology-clinic", "cardiac-rehab"]) {
+      expect(medSubjects.has(s)).toBe(false);
+    }
+  });
+
+  it("gap prompts read as questions, never advice (§1.1)", () => {
+    const ADVICE = /\byou should\b|\bmake sure\b|\bstop\b|\bstart\b|\btake\b|\bavoid\b|\bdon't\b/i;
+    for (const gap of schedule.gaps) {
+      expect(gap.prompt.endsWith("?")).toBe(true);
+      expect(gap.prompt).not.toMatch(ADVICE);
     }
   });
 });

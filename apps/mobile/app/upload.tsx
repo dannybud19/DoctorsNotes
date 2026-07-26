@@ -11,8 +11,8 @@ import {
   GalleryIcon,
 } from "../components/upload/icons";
 import { warm } from "../components/warm";
-import { audioClaims, documentFixtureClaims } from "./lib/data";
-import { setDischarged } from "./lib/dischargeState";
+import { audioClaims } from "./lib/data";
+import { RECOVERY_ROUTE, setDischarged } from "./lib/dischargeState";
 import { setLiveClaims } from "./lib/liveSession";
 import { font, HIT_SLOP, MIN_TOUCH, space } from "./lib/theme";
 
@@ -58,9 +58,10 @@ function guessMimeFromName(name: string): string {
 }
 
 // Screen 4 — Update Medical Files (LIVE). Pick or photograph a document, send it to /api/extract-document
-// (Claude vision → verbatim, document-sourced claims), merge with the spoken claims, and open the
-// session view where the letter's aspirin 150mg meets the spoken 75mg as "worth confirming". On any
-// failure a sample document keeps the demo working with no network — same pattern as recording.
+// (Claude vision → verbatim, document-sourced claims), merge with the spoken claims, and — treating a
+// processed document as a discharge letter — mark the patient discharged and open the recovery
+// dashboard (/recovery), where the letter's aspirin 150mg vs the spoken 75mg surfaces as "worth
+// confirming". On any failure the error screen offers a retry — the real upload is the only path.
 //
 // This screen uses its own shell rather than the shared `Screen` component: `Screen`'s white
 // background is used by nine other screens, and this one is a two-tone terracotta layout.
@@ -77,10 +78,10 @@ export default function Upload() {
   /** Merge the extracted document claims with the spoken claims and hand off to the session view. */
   function showMerged(docClaims: Awaited<ReturnType<typeof extractDocument>>) {
     setLiveClaims([...audioClaims, ...docClaims]);
-    // A document (discharge letter) was processed → the patient is discharged. The session screen
-    // reads this and forwards to the recovery dashboard.
+    // A document (discharge letter) was processed → the patient is discharged. Land on the recovery
+    // dashboard; the Home ⇄ Recovery toggle then lets them move back and forth (PhaseSwitch).
     setDischarged(true);
-    router.push("/session");
+    router.replace(RECOVERY_ROUTE);
   }
 
   async function extractDocument(file: PickedFile) {
@@ -109,7 +110,7 @@ export default function Upload() {
   async function pickCamera(): Promise<PickedFile | null> {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      fail("Camera access is needed to photograph the document. You can still use a sample.");
+      fail("Camera access is needed to photograph the document. You can upload a file instead.");
       return null;
     }
     const result = await ImagePicker.launchCameraAsync({ quality: 1 });
@@ -145,13 +146,6 @@ export default function Upload() {
     }
   }
 
-  function useSample() {
-    setLiveClaims([...audioClaims, ...documentFixtureClaims]);
-    // The sample is a discharge summary, so the sample path discharges too.
-    setDischarged(true);
-    router.push("/session");
-  }
-
   if (phase === "uploading") {
     return (
       <PlainShell>
@@ -171,22 +165,13 @@ export default function Upload() {
           <Text style={styles.errorTitle}>We couldn't read that document</Text>
           <Text style={styles.errorMsg}>{errorMsg}</Text>
           <Pressable
-            onPress={useSample}
-            hitSlop={HIT_SLOP}
-            accessibilityRole="button"
-            accessibilityLabel="Use a sample document instead"
-            style={styles.primaryBtn}
-          >
-            <Text style={styles.primaryBtnText}>Use sample document</Text>
-          </Pressable>
-          <Pressable
             onPress={() => setPhase("idle")}
             hitSlop={HIT_SLOP}
             accessibilityRole="button"
             accessibilityLabel="Try again"
-            style={styles.secondaryBtn}
+            style={styles.primaryBtn}
           >
-            <Text style={styles.secondaryBtnText}>Try again</Text>
+            <Text style={styles.primaryBtnText}>Try again</Text>
           </Pressable>
         </View>
       </PlainShell>
@@ -255,16 +240,6 @@ export default function Upload() {
               */}
               <Text style={styles.galleryHint}>PNG, JPEG or PDF</Text>
             </View>
-          </Pressable>
-
-          <Pressable
-            onPress={useSample}
-            hitSlop={HIT_SLOP}
-            accessibilityRole="button"
-            accessibilityLabel="Use a sample document instead"
-            style={styles.link}
-          >
-            <Text style={styles.linkText}>Use sample document</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -361,9 +336,6 @@ const styles = StyleSheet.create({
   galleryTitle: { fontSize: font.label, fontWeight: "700", color: warm.ink },
   galleryHint: { fontSize: 14, color: warm.inkMuted },
 
-  link: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
-  linkText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
-
   plainSafe: { flex: 1, backgroundColor: warm.cream },
   plainContent: { flex: 1, padding: space.lg, justifyContent: "center" },
   center: { alignItems: "center", gap: space.md, paddingVertical: space.lg },
@@ -380,6 +352,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
   },
   primaryBtnText: { fontSize: font.label, fontWeight: "700", color: "#ffffff" },
-  secondaryBtn: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
-  secondaryBtnText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
 });
