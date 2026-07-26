@@ -1,10 +1,17 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { BackButton, Row, Screen, SectionTitle } from "../../components/ui";
+import { warm } from "../../components/warm";
+import {
+  WarmBack,
+  WarmRow,
+  WarmScreen,
+  WarmSectionTitle,
+  WarmTitle,
+} from "../../components/warmUi";
 import { formatDateTime, getClaim, getEncounter, speakerLabel } from "../lib/data";
-import { colors, font, space } from "../lib/theme";
+import { font, space } from "../lib/theme";
 
-// Encounter detail (skeleton). The extracted claims stand in as the transcript, highlighted.
+// Encounter detail. The extracted claims stand in as the transcript, highlighted.
 export default function EncounterDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -12,46 +19,60 @@ export default function EncounterDetail() {
 
   if (!enc) {
     return (
-      <Screen>
-        <BackButton onPress={() => router.back()} />
-        <Text style={styles.h1}>We couldn't find that consultation</Text>
-      </Screen>
+      <WarmScreen>
+        <WarmBack onPress={() => router.back()} />
+        <WarmTitle>We couldn't find that consultation</WarmTitle>
+      </WarmScreen>
     );
   }
 
   return (
-    <Screen scroll>
-      <BackButton onPress={() => router.back()} />
-      <Text style={styles.h1}>{speakerLabel(enc.speaker)}</Text>
-      <Row label="When" value={formatDateTime(enc.occurredAt)} />
-      <Row label="Length" value={`${Math.round(enc.durationMs / 60000)} min`} />
+    <WarmScreen scroll>
+      <WarmBack onPress={() => router.back()} />
+      <Text style={styles.h1} accessibilityRole="header">
+        {speakerLabel(enc.speaker)}
+      </Text>
+      <WarmRow label="When" value={formatDateTime(enc.occurredAt)} />
+      <WarmRow label="Length" value={`${Math.round(enc.durationMs / 60000)} min`} />
 
-      <SectionTitle>Transcript — extracted claims highlighted</SectionTitle>
+      <WarmSectionTitle>Transcript — extracted claims highlighted</WarmSectionTitle>
       {enc.claimIds.map((cid) => {
         const c = getClaim(cid);
         return c ? (
           <View key={cid} style={styles.claim}>
-            <Text style={styles.verbatim}>"{c.verbatimText}"</Text>
+            <Text style={styles.verbatim}>
+              {"“"}
+              {c.verbatimText}
+              {"”"}
+            </Text>
             <Text style={styles.meta}>
               {c.category} · {c.subject}
             </Text>
           </View>
         ) : null;
       })}
-    </Screen>
+    </WarmScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  h1: { fontSize: font.huge, fontWeight: "800", color: colors.text, textTransform: "capitalize" },
+  h1: {
+    fontSize: font.huge,
+    fontWeight: "800",
+    color: warm.ink,
+    textTransform: "capitalize",
+    lineHeight: 42,
+  },
   claim: {
     gap: space.xs,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-    backgroundColor: colors.surface,
-    padding: space.md,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: warm.hairline,
+    borderLeftWidth: 5,
+    borderLeftColor: warm.terracotta,
+    backgroundColor: warm.card,
+    padding: space.lg,
   },
-  verbatim: { fontSize: font.body, color: colors.text, lineHeight: 30 },
-  meta: { fontSize: font.label, color: colors.textMuted },
+  verbatim: { fontSize: font.body, color: warm.ink, lineHeight: 30 },
+  meta: { fontSize: font.label, color: warm.inkMuted },
 });
