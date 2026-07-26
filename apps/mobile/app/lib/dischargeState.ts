@@ -23,7 +23,9 @@ export function clearDischarge(): void {
 }
 
 /**
- * Where a discharged patient lands — the recovery dashboard a teammate is building. Kept as one
- * constant so re-pointing to a different route is a single-line change.
+ * The two ends of the discharge phase toggle. A discharged patient lands on RECOVERY_ROUTE, and can
+ * move back and forth to the admitted phase (Home) via the PhaseSwitch. Kept as constants so
+ * re-pointing either end is a single-line change.
  */
 export const RECOVERY_ROUTE = "/recovery" as Href;
+export const ADMITTED_ROUTE = "/" as Href;

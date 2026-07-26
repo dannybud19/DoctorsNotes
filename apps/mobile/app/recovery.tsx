@@ -4,7 +4,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Backdrop } from "../components/recovery/Backdrop";
 import {
-  ArrowRightIcon,
   AskIcon,
   BellIcon,
   CheckIcon,
@@ -14,6 +13,7 @@ import {
   PillIcon,
   type Mood,
 } from "../components/recovery/icons";
+import { PhaseSwitch } from "../components/PhaseSwitch";
 import { warm } from "../components/warm";
 import {
   dueMedications,
@@ -31,6 +31,9 @@ import { font, HIT_SLOP, MIN_TOUCH, NEEDS_CONFIRMING, space } from "./lib/theme"
 // VERBATIM words, never an app-written description of what a drug is for — that would be advice the
 // app invented (AGENTS.md §1.1/§1.2). A dose is labelled "Confirmed" only when the reconciler found
 // a patient Confirmation for it (D5); otherwise it says "Needs confirming", never a scheduled dose.
+//
+// The Hospital stay ⇄ Recovery toggle (PhaseSwitch) at the top lets a discharged patient move back
+// to the admitted phase (Home) and back again — it replaces the old "Begin a hospital stay" button.
 export default function Recovery() {
   const router = useRouter();
   const firstMed = dueMedications[0];
@@ -42,6 +45,8 @@ export default function Recovery() {
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <Backdrop />
       <ScrollView contentContainerStyle={styles.content}>
+        <PhaseSwitch current="recovery" />
+
         <Text style={styles.hi} accessibilityRole="header">
           Hi, {patientName}
         </Text>
@@ -110,19 +115,6 @@ export default function Recovery() {
             />
           </View>
         </View>
-
-        <Pressable
-          onPress={() => router.push("/")}
-          hitSlop={HIT_SLOP}
-          accessibilityRole="button"
-          accessibilityLabel="Begin a hospital stay"
-          style={styles.stayRow}
-        >
-          <View style={styles.stayDisc}>
-            <ArrowRightIcon color="#ffffff" />
-          </View>
-          <Text style={styles.stayText}>Begin a hospital stay</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -339,27 +331,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tileLabel: { fontSize: 15, fontWeight: "700", color: warm.ink, textAlign: "center", lineHeight: 20 },
-
-  stayRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    minHeight: 84,
-    borderRadius: 999,
-    backgroundColor: warm.card,
-    borderWidth: 1,
-    borderColor: warm.hairline,
-    paddingRight: space.lg,
-    paddingLeft: 6,
-    marginTop: space.sm,
-  },
-  stayDisc: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    backgroundColor: warm.terracotta,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stayText: { flex: 1, fontSize: font.label, fontWeight: "700", color: warm.ink },
 });

@@ -97,16 +97,16 @@ export type QuestionList = Question[];
 export function buildQuestions(groups: ClaimGroup[]): QuestionList {
   const questions: QuestionList = [];
   for (const group of groups) {
-    if (group.status === "agreed") {
+    // Only a genuine disagreement (>=2 sources with differing values → `worth_confirming`) becomes a
+    // question. A single-source (`uncorroborated`) claim is NOT raised: a lone mention isn't a
+    // discrepancy to ask about, and surfacing every one drowned the real conflicts. (Resolves the
+    // PROJECT.md §4 open decision on uncorroborated → question volume.)
+    if (group.status !== "worth_confirming") {
       continue;
     }
-    // After the guard, `group.status` narrows to "worth_confirming" | "uncorroborated".
-    const status: QuestionStatus = group.status;
+    const status: QuestionStatus = group.status; // narrowed to "worth_confirming"
     const label = humanizeSubject(group.subject);
-    const prompt =
-      status === "worth_confirming"
-        ? `I've heard more than one thing about ${label}. Can you tell me what the plan is now?`
-        : `Only one person has mentioned ${label} so far. Can you go over it with me?`;
+    const prompt = conflictPrompt(label, group.claims);
 
     questions.push({
       id: `q-${group.category}-${group.subject}`,
@@ -123,4 +123,38 @@ export function buildQuestions(groups: ClaimGroup[]): QuestionList {
 /** Turn a normalized subject key ("cardiology-clinic") into readable words ("cardiology clinic"). */
 function humanizeSubject(subject: string): string {
   return subject.replace(/-/g, " ").trim();
+}
+
+// A prompt must never read as advice: the safety test forbids these verbs (views.test.ts). When a
+// claim's own value contains one (e.g. "avoid strenuous activity"), we phrase around it rather than
+// quote it into a question.
+const ADVICE = /\byou should\b|\bmake sure\b|\bstop\b|\bstart\b|\btake\b|\bavoid\b|\bdon't\b/i;
+
+/** Distinct claim values, oldest→newest, deduped by canonical form (keeps the original strings). */
+function distinctValues(claims: readonly Claim[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const c of claims) {
+    const key = c.value.toLowerCase().replace(/\s+/g, "");
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(c.value);
+    }
+  }
+  return out;
+}
+
+/**
+ * A genuine, gap-focused question for a `worth_confirming` group — value-aware where it's safe. It
+ * surfaces the two versions ("one source says 75mg once daily and another says 150mg once daily"),
+ * falling back to a value-free phrasing when a value would read as advice. Never implies who is right
+ * — it asks which value is *current* (the domain's time-ordered framing, D5). Ends in "?" and avoids
+ * the advice verbs above.
+ */
+function conflictPrompt(label: string, claims: readonly Claim[]): string {
+  const [v1, v2] = distinctValues(claims);
+  if (v1 && v2 && !ADVICE.test(v1) && !ADVICE.test(v2)) {
+    return `For my ${label}, one source says ${v1} and another says ${v2} — which one is current for me now?`;
+  }
+  return `I've been told more than one thing about my ${label} — which one is current for me now?`;
 }

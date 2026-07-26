@@ -1,41 +1,43 @@
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { BackButton, ClaimCard, Screen, SectionTitle } from "../components/ui";
+import { BackButton } from "../components/ui";
+import { TranscriptBubble } from "../components/chat/TranscriptBubble";
+import { WarmClaimCard, WarmScreen, WarmSectionTitle } from "../components/warmUi";
+import { warm } from "../components/warm";
 import {
   buildSession,
   entryId,
   questions as fixtureQuestions,
   runningPicture as fixturePicture,
   sessionClaims as fixtureWhatChanged,
+  sessionTranscript,
   subjectLabel,
+  transcriptView,
 } from "./lib/data";
-import { isDischarged, RECOVERY_ROUTE } from "./lib/dischargeState";
 import { getLiveClaims } from "./lib/liveSession";
-import { colors, font, space, STATUS_LABEL } from "./lib/theme";
+import { getLiveTranscript } from "./lib/liveTranscript";
+import { font, space, STATUS_LABEL } from "./lib/theme";
 
-// Screen 3 — Session result. Renders the LIVE extract response if present, else the sample fixture.
-// Three sections, claim cards only. NO prose summary anywhere.
+// Screen 3 — Session result, warm theme. The consultation is shown as a two-speaker chat transcript
+// (User 1 / User 2), followed by the reconciled "Questions worth asking" and "Running picture".
+// The transcript is verbatim display only; claims still come from the pure reconciler.
 export default function Session() {
   const router = useRouter();
   const live = getLiveClaims();
 
-  // Discharge trigger: once a discharge document has been processed, the running picture forwards to
-  // the recovery dashboard. <Redirect> short-circuits render (no flash of this screen). When the two
-  // dashboards later become tab-slide siblings, this becomes "select the recovery tab" instead.
-  if (isDischarged()) {
-    return <Redirect href={RECOVERY_ROUTE} />;
-  }
-
-  // Same three sections whether live or fixture — computed by the pure reconciler either way.
+  // Same three reconciled sections whether live or fixture — computed by the pure reconciler.
   const { whatChanged, picture, qs } = live
     ? buildSession(live)
     : { whatChanged: fixtureWhatChanged, picture: fixturePicture, qs: fixtureQuestions };
+
+  // The conversation as bubbles: the live recording's own turns when present, else the sample.
+  const bubbles = transcriptView(getLiveTranscript() ?? sessionTranscript);
 
   const open = (category: string, subject: string) =>
     router.push(`/subject/${entryId(category, subject)}`);
 
   return (
-    <Screen scroll>
+    <WarmScreen scroll>
       <BackButton onPress={() => router.back()} />
       <View style={styles.headerRow}>
         <Text style={styles.h1} accessibilityRole="header">
@@ -46,16 +48,16 @@ export default function Session() {
         </View>
       </View>
 
-      <SectionTitle>What changed</SectionTitle>
-      {whatChanged.length === 0 ? (
-        <Text style={styles.empty}>Nothing new was captured.</Text>
-      ) : (
-        whatChanged.map((c) => (
-          <ClaimCard key={c.id} claim={c} onPress={() => open(c.category, c.subject)} />
-        ))
-      )}
+      <WarmSectionTitle>What was said</WarmSectionTitle>
+      <View style={styles.transcript}>
+        {bubbles.map((b) => (
+          <TranscriptBubble key={b.id} speaker={b.speaker} side={b.side}>
+            <Text style={styles.turnText}>{b.text}</Text>
+          </TranscriptBubble>
+        ))}
+      </View>
 
-      <SectionTitle>Questions worth asking</SectionTitle>
+      <WarmSectionTitle>Questions worth asking</WarmSectionTitle>
       {qs.length === 0 ? (
         <Text style={styles.empty}>Nothing worth asking about right now.</Text>
       ) : (
@@ -63,35 +65,37 @@ export default function Session() {
           <View key={q.id} style={styles.qBlock}>
             <Text style={styles.prompt}>{q.prompt}</Text>
             {q.fromClaims.map((fc) => (
-              <ClaimCard key={fc.id} claim={fc} onPress={() => open(fc.category, fc.subject)} />
+              <WarmClaimCard key={fc.id} claim={fc} onPress={() => open(fc.category, fc.subject)} />
             ))}
           </View>
         ))
       )}
 
-      <SectionTitle>Running picture</SectionTitle>
+      <WarmSectionTitle>Running picture</WarmSectionTitle>
       {picture.map((e) => (
         <View key={e.id} style={styles.pBlock}>
           <Text style={styles.status}>
             {subjectLabel(e.subject)} · {STATUS_LABEL[e.status]}
           </Text>
-          <ClaimCard claim={e.latest} onPress={() => open(e.category, e.subject)} />
+          <WarmClaimCard claim={e.latest} onPress={() => open(e.category, e.subject)} />
         </View>
       ))}
-    </Screen>
+    </WarmScreen>
   );
 }
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  h1: { fontSize: font.huge, fontWeight: "800", color: colors.text },
+  h1: { fontSize: font.huge, fontWeight: "800", color: warm.ink },
   badge: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },
   badgeLive: { backgroundColor: "#e6efe6" },
-  badgeSample: { backgroundColor: colors.surface },
-  badgeText: { fontSize: font.label, fontWeight: "700", color: colors.textMuted },
-  empty: { fontSize: font.body, color: colors.textMuted },
+  badgeSample: { backgroundColor: warm.card, borderWidth: 1, borderColor: warm.hairline },
+  badgeText: { fontSize: font.label, fontWeight: "700", color: warm.inkMuted },
+  transcript: { gap: space.md },
+  turnText: { fontSize: font.body, lineHeight: 30, color: warm.ink },
+  empty: { fontSize: font.body, color: warm.inkMuted },
   qBlock: { gap: space.sm },
-  prompt: { fontSize: font.body, fontWeight: "700", color: colors.text, lineHeight: 30 },
+  prompt: { fontSize: font.body, fontWeight: "700", color: warm.ink, lineHeight: 30 },
   pBlock: { gap: space.xs },
-  status: { fontSize: font.label, fontWeight: "600", color: colors.textMuted, textTransform: "capitalize" },
+  status: { fontSize: font.label, fontWeight: "600", color: warm.inkMuted, textTransform: "capitalize" },
 });

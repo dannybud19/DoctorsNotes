@@ -159,6 +159,39 @@ export type TranscriptTurn = {
 /** Turns for the simulated recording session, in arrival order. */
 export const sessionTranscript: TranscriptTurn[] = sessionTranscriptRaw.turns;
 
+/** A transcript turn rendered as a generic two-sided chat bubble. */
+export type TranscriptBubbleView = {
+  id: string;
+  /** Generic label — "User 1", "User 2". Never doctor/patient (display only). */
+  speaker: string;
+  side: "left" | "right";
+  text: string;
+};
+
+/**
+ * Map diarized turns to "User 1 / User 2" chat bubbles. Distinct speakers are numbered in
+ * first-appearance order and alternate sides (User 1 left, User 2 right). Identity is keyed on the
+ * speaker's label/role (or diarization id for a live transcript) — the display stays generic, so we
+ * never attribute clinical authority. Verbatim text only; no paraphrase.
+ */
+export function transcriptView(turns: TranscriptTurn[]): TranscriptBubbleView[] {
+  const order: string[] = [];
+  return turns.map((t, i) => {
+    const key = t.speaker.label ?? t.speaker.role;
+    let idx = order.indexOf(key);
+    if (idx === -1) {
+      idx = order.length;
+      order.push(key);
+    }
+    return {
+      id: `turn-${i}`,
+      speaker: `User ${idx + 1}`,
+      side: idx % 2 === 0 ? "left" : "right",
+      text: t.verbatimText,
+    };
+  });
+}
+
 /** Claims produced by this session ("What changed"), newest first. */
 export const sessionClaims: Claim[] = sessionTranscriptRaw.claimIds
   .map((id) => claimsById[id])
