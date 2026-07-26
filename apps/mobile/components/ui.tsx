@@ -5,7 +5,7 @@ import type { Claim } from "@medthread/domain";
 import { formatDate, sourceKindLabel, sourceSummary } from "../app/lib/data";
 import { colors, font, HIT_SLOP, MIN_TOUCH, record, space } from "../app/lib/theme";
 import { ChevronIcon } from "./home/icons";
-import { actionSize, home } from "./home/palette";
+import { actionSize, warm } from "./warm";
 
 /** Screen shell with safe-area insets. Set `scroll` for long content. */
 export function Screen({ children, scroll }: { children: ReactNode; scroll?: boolean }) {
@@ -337,12 +337,12 @@ const s = StyleSheet.create({
   // --- Home-only styles (Greeting + ActionButton). Both components are used by app/index.tsx alone,
   // so the warm home palette lives here without affecting any other screen.
   greeting: { gap: space.sm, marginBottom: space.lg, alignItems: "center" },
-  greetingHi: { fontSize: font.title, fontWeight: "700", color: home.ink, textAlign: "center" },
-  greetingName: { color: home.terracotta, fontWeight: "800" },
+  greetingHi: { fontSize: font.title, fontWeight: "700", color: warm.ink, textAlign: "center" },
+  greetingName: { color: warm.terracotta, fontWeight: "800" },
   greetingSub: {
     fontSize: font.huge,
     fontWeight: "800",
-    color: home.ink,
+    color: warm.ink,
     textAlign: "center",
     lineHeight: 42,
   },
@@ -350,8 +350,8 @@ const s = StyleSheet.create({
     minHeight: actionSize.minHeight,
     borderRadius: actionSize.radius,
     borderWidth: 1,
-    borderColor: home.hairline,
-    backgroundColor: home.card,
+    borderColor: warm.hairline,
+    backgroundColor: warm.card,
     flexDirection: "row",
     alignItems: "center",
     gap: actionSize.gap,
@@ -365,7 +365,7 @@ const s = StyleSheet.create({
     elevation: 2,
   },
   actionIcon: { width: actionSize.iconSize, alignItems: "center", justifyContent: "center" },
-  actionText: { flex: 1, fontSize: font.heading, fontWeight: "800", color: home.ink },
+  actionText: { flex: 1, fontSize: font.heading, fontWeight: "800", color: warm.ink },
   card: {
     borderRadius: 16,
     borderWidth: 1,

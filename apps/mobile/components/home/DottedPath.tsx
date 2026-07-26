@@ -19,7 +19,7 @@
 import { useState } from "react";
 import { StyleSheet, View, type LayoutChangeEvent } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { home } from "./palette";
+import { warm } from "../warm";
 
 /** A cubic segment: two control points and an end point, all as {x, y} fractions of the container. */
 type Segment = { c1: [number, number]; c2: [number, number]; to: [number, number] };
@@ -67,8 +67,8 @@ export function DottedPath() {
         <Svg width={size.width} height={size.height}>
           <Path
             d={buildPath(size.width, size.height)}
-            stroke={home.pathStroke}
-            strokeOpacity={home.pathOpacity}
+            stroke={warm.pathStroke}
+            strokeOpacity={warm.pathOpacity}
             strokeWidth={DOT}
             strokeLinecap="round"
             // A near-zero dash with a round cap renders as a dot; GAP sets the rhythm.

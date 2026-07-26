@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DottedPath } from "../components/home/DottedPath";
 import { ChatIcon, ClipboardIcon, FolderIcon, MicIcon } from "../components/home/icons";
-import { home } from "../components/home/palette";
+import { warm } from "../components/warm";
 import { ActionButton, Greeting } from "../components/ui";
 import { patientName } from "./lib/data";
 import { space } from "./lib/theme";
@@ -51,7 +51,7 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: home.cream },
+  safe: { flex: 1, backgroundColor: warm.cream },
   content: { padding: space.lg, paddingTop: space.xl, gap: space.md },
   actions: { gap: space.md },
 });
