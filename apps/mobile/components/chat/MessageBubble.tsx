@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
-import { home } from "../home/palette";
+import { warm } from "../warm";
 import { space } from "../../app/lib/theme";
 
 /** Warm terracotta wash for the patient's own messages. Ink text on it measures AAA. */
@@ -27,9 +27,9 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: "92%", borderRadius: 20, padding: space.md, gap: space.sm },
   user: { backgroundColor: USER_TINT, borderTopRightRadius: 6 },
   assistant: {
-    backgroundColor: home.card,
+    backgroundColor: warm.card,
     borderWidth: 1,
-    borderColor: home.hairline,
+    borderColor: warm.hairline,
     borderTopLeftRadius: 6,
   },
 });

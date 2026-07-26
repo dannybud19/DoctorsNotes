@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
-import { home } from "../home/palette";
+import { warm } from "../warm";
 import { colors, font, HIT_SLOP, space } from "../../app/lib/theme";
 
 export type Chip = { key: string; label: string };
@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: home.terracotta,
-    backgroundColor: home.card,
+    borderColor: warm.terracotta,
+    backgroundColor: warm.card,
     paddingHorizontal: space.md,
   },
   text: { fontSize: font.label, fontWeight: "700", color: colors.text },

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { home } from "../home/palette";
+import { warm } from "../warm";
 import { colors, font, HIT_SLOP, MIN_TOUCH, space } from "../../app/lib/theme";
 
 /**
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
     paddingBottom: space.md,
     borderTopWidth: 1,
-    borderTopColor: home.hairline,
-    backgroundColor: home.cream,
+    borderTopColor: warm.hairline,
+    backgroundColor: warm.cream,
   },
   input: {
     flex: 1,
@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
     maxHeight: 140,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: home.hairline,
-    backgroundColor: home.card,
+    borderColor: warm.hairline,
+    backgroundColor: warm.card,
     paddingHorizontal: space.md,
     paddingTop: space.sm,
     paddingBottom: space.sm,
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: home.terracotta,
+    backgroundColor: warm.terracotta,
   },
-  sendDisabled: { backgroundColor: home.hairline },
+  sendDisabled: { backgroundColor: warm.hairline },
   glyph: { fontSize: 28, fontWeight: "800", color: "#ffffff", lineHeight: 30 },
 });

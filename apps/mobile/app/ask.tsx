@@ -8,7 +8,7 @@ import { MessageBubble } from "../components/chat/MessageBubble";
 import { SuggestionChips, type Chip } from "../components/chat/SuggestionChips";
 import { Composer } from "../components/chat/Composer";
 import { GapList } from "../components/chat/GapList";
-import { home } from "../components/home/palette";
+import { warm } from "../components/warm";
 import { askResponses, claimGroups, entryId, getClaim, patientName, questions } from "./lib/data";
 import { colors, font, space } from "./lib/theme";
 
@@ -216,7 +216,7 @@ export default function Ask() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: home.cream },
+  safe: { flex: 1, backgroundColor: warm.cream },
   flex: { flex: 1 },
   header: {
     flexDirection: "row",
