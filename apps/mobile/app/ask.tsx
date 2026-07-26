@@ -1,21 +1,30 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { AskResponse } from "@medthread/domain";
-import { BackButton, ClaimCard } from "../components/ui";
+import type { AskResponse, GeneratedQuestion } from "@medthread/domain";
+import { BackButton } from "../components/ui";
 import { MessageBubble } from "../components/chat/MessageBubble";
+import { AnswerText } from "../components/chat/AnswerText";
+import { QuestionsToAsk, type QAItem } from "../components/chat/QuestionsToAsk";
 import { SuggestionChips, type Chip } from "../components/chat/SuggestionChips";
 import { Composer } from "../components/chat/Composer";
-import { GapList } from "../components/chat/GapList";
 import { warm } from "../components/warm";
-import { askResponses, claimGroups, entryId, getClaim, patientName, questions } from "./lib/data";
+import {
+  askResponses,
+  claimGroups,
+  entryId,
+  generatedQuestionsFallback,
+  getClaim,
+  patientName,
+  questions,
+} from "./lib/data";
 import { colors, font, space } from "./lib/theme";
 
-// Screen 6 — Chat with MedThread (LIVE, chatbot layout). A scrollable message thread + bottom composer.
-// Each factual question POSTs to /api/ask (RETRIEVAL only — never a generated fact); the no_source guard
-// is intact. "Questions to ask your doctor" are DERIVED from buildQuestions() (data-driven, never advice).
-// On any /api/ask failure the labelled fixture fallback keeps the thread from blanking.
+// Screen 6 — Chat with MedThread (LIVE, ChatGPT-style). Factual questions POST to /api/ask, which now
+// returns a grounded plain-language answer (answerText) + server-derived citations — every sentence
+// traces to a real claim; no source → no_source (guard intact). "What should I ask my doctor?" fetches
+// deeper AI-generated, claim-grounded questions from /api/questions. Both keep a fixture fallback.
 
 type ChatMessage =
   | { id: string; role: "user"; text: string }
@@ -31,28 +40,38 @@ const CHIPS: Chip[] = [
 
 const FALLBACK_ORDER = ["answered", "partial", "no_source"] as const;
 
+// Deterministic discrepancy questions (buildQuestions) → the compact "also worth clarifying" section.
+const EVERYONE_QA: QAItem[] = questions.map((q) => ({
+  id: q.id,
+  prompt: q.prompt,
+  claimIds: q.fromClaims.map((c) => c.id),
+}));
+
 export default function Ask() {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
+  const [generated, setGenerated] = useState<GeneratedQuestion[] | null>(null);
+  const [genPending, setGenPending] = useState(false);
   const idRef = useRef(0);
   const fbRef = useRef(0);
   const scrollRef = useRef<ScrollView>(null);
 
   const nextId = () => `m${idRef.current++}`;
   const add = (m: ChatMessage) => setMessages((prev) => [...prev, m]);
-  const openClaim = (category: string, subject: string) =>
-    router.push(`/subject/${entryId(category, subject)}`);
+  const openClaim = (claimId: string) => {
+    const c = getClaim(claimId);
+    if (c) router.push(`/subject/${entryId(c.category, c.subject)}`);
+  };
 
-  // Intro + a gentle, opt-in nudge toward the knowledge-gap questions (only if any exist).
   useEffect(() => {
     const seed: ChatMessage[] = [
       {
         id: nextId(),
         role: "assistant",
         kind: "text",
-        text: `Hi ${patientName}. Ask me about what you were told at the hospital — your medicines, your appointments, your results. I only tell you what your clinicians actually said.`,
+        text: `Hi ${patientName}. Ask me about what you were told at the hospital — your medicines, your appointments, your results. I only tell you what your clinicians actually said, and I'll show you who said it.`,
       },
     ];
     if (questions.length > 0) {
@@ -70,7 +89,22 @@ export default function Ask() {
   useEffect(() => {
     const t = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
     return () => clearTimeout(t);
-  }, [messages, pending]);
+  }, [messages, pending, genPending, generated]);
+
+  // The suggestion pills fade away while a reply is being fetched, and fade back in once it lands.
+  const [chipsMounted, setChipsMounted] = useState(true);
+  const chipsOpacity = useRef(new Animated.Value(1)).current;
+  const showChips = !pending && !genPending;
+  useEffect(() => {
+    if (showChips) {
+      setChipsMounted(true);
+      Animated.timing(chipsOpacity, { toValue: 1, duration: 220, useNativeDriver: false }).start();
+    } else {
+      Animated.timing(chipsOpacity, { toValue: 0, duration: 160, useNativeDriver: false }).start((res) => {
+        if (res.finished) setChipsMounted(false);
+      });
+    }
+  }, [showChips, chipsOpacity]);
 
   function fixtureFallback(): AskResponse {
     const kind = FALLBACK_ORDER[fbRef.current % FALLBACK_ORDER.length]!;
@@ -95,7 +129,6 @@ export default function Ask() {
       const data = (await res.json()) as AskResponse & { message?: string; error?: string };
       if (!res.ok) throw new Error(data.message ?? data.error ?? `Request failed (${res.status})`);
       add({ id: nextId(), role: "assistant", kind: "answer", response: data, offline: false });
-      // If nothing answered it, gently surface what's worth asking the doctor instead.
       if (data.kind === "no_source") add({ id: nextId(), role: "assistant", kind: "gaps" });
     } catch {
       const fb = fixtureFallback();
@@ -106,43 +139,55 @@ export default function Ask() {
     }
   }
 
+  async function fetchGenerated() {
+    if (generated !== null || genPending) return;
+    setGenPending(true);
+    try {
+      const apiBase = process.env.EXPO_PUBLIC_API_URL;
+      if (!apiBase) throw new Error("EXPO_PUBLIC_API_URL is not set.");
+      const res = await fetch(`${apiBase}/api/questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groups: claimGroups }),
+      });
+      const data = (await res.json()) as { questions?: GeneratedQuestion[] };
+      if (!res.ok || !Array.isArray(data.questions)) throw new Error("bad response");
+      setGenerated(data.questions);
+    } catch {
+      setGenerated(generatedQuestionsFallback);
+    } finally {
+      setGenPending(false);
+    }
+  }
+
   function onPickChip(chip: Chip) {
     if (chip.key === "doctor") {
       add({ id: nextId(), role: "user", text: chip.label });
       add({ id: nextId(), role: "assistant", kind: "gaps" });
+      void fetchGenerated();
       return;
     }
     void sendQuestion(chip.label);
   }
 
-  const cards = (ids: readonly string[]) =>
-    ids.map((id) => {
-      const c = getClaim(id);
-      return c ? <ClaimCard key={id} claim={c} onPress={() => openClaim(c.category, c.subject)} /> : null;
-    });
+  const generatedQA: QAItem[] = (generated ?? []).map((q) => ({
+    id: q.id,
+    prompt: q.prompt,
+    claimIds: q.fromClaimIds,
+  }));
 
-  function AnswerBody({ r }: { r: AskResponse }) {
-    if (r.kind === "answered") {
-      return (
-        <>
-          <Text style={styles.answerHead}>Here's what you were told</Text>
-          {cards(r.claimIds)}
-        </>
-      );
-    }
-    if (r.kind === "partial") {
-      return (
-        <>
-          <Text style={styles.answerHead}>Part of the answer</Text>
-          {cards(r.claimIds)}
-          <Text style={styles.body}>Still unclear — {r.gap}</Text>
-        </>
-      );
-    }
+  function renderAnswer(response: AskResponse, offline: boolean) {
     return (
       <>
-        <Text style={styles.answerHead}>Nobody has told you this yet, and I won't guess.</Text>
-        <Text style={styles.body}>{r.suggestedQuestion}</Text>
+        {offline ? <Text style={styles.offline}>Sample answer — offline.</Text> : null}
+        {response.kind === "no_source" ? (
+          <>
+            <Text style={styles.body}>Nobody has told you this yet, and I won't guess.</Text>
+            <Text style={styles.body}>{response.suggestedQuestion}</Text>
+          </>
+        ) : (
+          <AnswerText response={response} onOpenClaim={openClaim} />
+        )}
       </>
     );
   }
@@ -185,14 +230,18 @@ export default function Ask() {
             if (m.kind === "gaps") {
               return (
                 <MessageBubble key={m.id} role="assistant">
-                  <GapList questions={questions} onOpenClaim={(c) => openClaim(c.category, c.subject)} />
+                  <QuestionsToAsk
+                    generated={generatedQA}
+                    everyone={EVERYONE_QA}
+                    pending={genPending}
+                    onOpenClaim={openClaim}
+                  />
                 </MessageBubble>
               );
             }
             return (
               <MessageBubble key={m.id} role="assistant">
-                {m.offline ? <Text style={styles.offline}>Showing a sample answer — offline.</Text> : null}
-                <AnswerBody r={m.response} />
+                {renderAnswer(m.response, m.offline)}
               </MessageBubble>
             );
           })}
@@ -203,7 +252,11 @@ export default function Ask() {
           ) : null}
         </ScrollView>
 
-        <SuggestionChips chips={CHIPS} onPick={onPickChip} />
+        {chipsMounted ? (
+          <Animated.View style={{ opacity: chipsOpacity }}>
+            <SuggestionChips chips={CHIPS} onPick={onPickChip} />
+          </Animated.View>
+        ) : null}
         <Composer
           value={input}
           onChangeText={setInput}
@@ -226,8 +279,7 @@ const styles = StyleSheet.create({
     paddingTop: space.sm,
   },
   title: { fontSize: font.heading, fontWeight: "800", color: colors.text },
-  thread: { padding: space.lg, gap: space.md },
-  answerHead: { fontSize: font.heading, fontWeight: "800", color: colors.text, lineHeight: 32 },
-  body: { fontSize: font.body, color: colors.text, lineHeight: 30 },
-  offline: { fontSize: font.label, fontWeight: "700", color: colors.textMuted },
+  thread: { padding: space.lg, gap: space.sm },
+  body: { fontSize: font.body, color: colors.text, lineHeight: 28 },
+  offline: { fontSize: font.label, fontWeight: "700", color: colors.textMuted, marginBottom: 2 },
 });

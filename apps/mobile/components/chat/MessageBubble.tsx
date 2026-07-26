@@ -7,29 +7,30 @@ import { space } from "../../app/lib/theme";
 const USER_TINT = "#f4e4d9";
 
 /**
- * A chat bubble. `user` messages are a warm tint, right-aligned; `assistant` messages are a white
- * card with a hairline border, left-aligned. Presentation only — content is passed as children so
- * answers (claim cards), gap lists, and plain text all share the same bubble.
+ * ChatGPT-style rows. The assistant reply is **borderless, full-width plain text** (no card chrome) so
+ * answers read as clean prose, not stacked panels. The patient's own turns are a small right-aligned
+ * tinted pill. Presentation only — content is passed as children.
  */
 export function MessageBubble({ role, children }: { role: "user" | "assistant"; children: ReactNode }) {
-  const isUser = role === "user";
+  if (role === "assistant") {
+    return <View style={styles.assistant}>{children}</View>;
+  }
   return (
-    <View style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}>
-      <View style={[styles.bubble, isUser ? styles.user : styles.assistant]}>{children}</View>
+    <View style={styles.userRow}>
+      <View style={styles.userPill}>{children}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { width: "100%", flexDirection: "row" },
-  rowUser: { justifyContent: "flex-end" },
-  rowAssistant: { justifyContent: "flex-start" },
-  bubble: { maxWidth: "92%", borderRadius: 20, padding: space.md, gap: space.sm },
-  user: { backgroundColor: USER_TINT, borderTopRightRadius: 6 },
-  assistant: {
-    backgroundColor: warm.card,
-    borderWidth: 1,
-    borderColor: warm.hairline,
-    borderTopLeftRadius: 6,
+  assistant: { width: "100%", paddingVertical: space.xs, gap: space.xs },
+  userRow: { width: "100%", flexDirection: "row", justifyContent: "flex-end" },
+  userPill: {
+    maxWidth: "85%",
+    backgroundColor: USER_TINT,
+    borderRadius: 18,
+    borderTopRightRadius: 6,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
   },
 });

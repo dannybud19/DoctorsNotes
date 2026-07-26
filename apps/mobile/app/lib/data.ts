@@ -7,7 +7,7 @@
  * (AGENTS.md §1.3, §1.4). Everything below runs once, at module load.
  */
 import { ReconcileInput } from "@medthread/domain";
-import type { Claim, ClaimGroup, ClaimSource } from "@medthread/domain";
+import type { Claim, ClaimGroup, ClaimSource, GeneratedQuestion } from "@medthread/domain";
 import {
   buildQuestions,
   buildRunningPicture,
@@ -175,6 +175,10 @@ export function getEncounter(id: string) {
 
 /** The three AskResponse fixture variants (answered | partial | no_source). */
 export const askResponses = fixtures.askResponses;
+
+/** Offline fallback for /api/questions — sample AI-generated doctor-questions grounded in the fixture. */
+export const generatedQuestionsFallback: GeneratedQuestion[] = fixtures.generatedQuestions
+  .questions as GeneratedQuestion[];
 
 export const patientName: string = recoveryRaw.patientName;
 export const patientAge: number = recoveryRaw.patientAge;
