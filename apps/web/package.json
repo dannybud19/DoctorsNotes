@@ -1,5 +1,5 @@
 {
-  "name": "@doctorsnotes/web",
+  "name": "@medthread/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@doctorsnotes/ai": "workspace:*",
-    "@doctorsnotes/domain": "workspace:*",
-    "@doctorsnotes/supabase": "workspace:*",
+    "@medthread/ai": "workspace:*",
+    "@medthread/domain": "workspace:*",
+    "@medthread/supabase": "workspace:*",
     "next": "^15.1.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",

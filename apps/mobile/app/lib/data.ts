@@ -6,8 +6,8 @@
  * There is NO network and NO AI here — reconcile() and the view builders are pure functions
  * (AGENTS.md §1.3, §1.4). Everything below runs once, at module load.
  */
-import { ReconcileInput } from "@doctorsnotes/domain";
-import type { Claim, ClaimSource } from "@doctorsnotes/domain";
+import { ReconcileInput } from "@medthread/domain";
+import type { Claim, ClaimGroup, ClaimSource } from "@medthread/domain";
 import {
   buildQuestions,
   buildRunningPicture,
@@ -15,7 +15,7 @@ import {
   reconcile,
   type Question,
   type RunningPictureEntry,
-} from "@doctorsnotes/reconciler";
+} from "@medthread/reconciler";
 import sessionTranscriptRaw from "./fixtures/session-transcript.json";
 import recoveryRaw from "./fixtures/recovery.json";
 import { getLiveClaims } from "./liveSession";
@@ -43,6 +43,15 @@ export const runningPicture: PictureEntry[] = buildRunningPicture(groups).map((e
 }));
 
 export const questions: Question[] = buildQuestions(groups);
+
+/** The full reconciled picture (ClaimGroup[]) — sent to /api/ask so retrieval runs over it. */
+export const claimGroups: ClaimGroup[] = groups;
+
+/** The spoken (audio) claims — the base an uploaded document merges into (incl. aspirin 75mg). */
+export const audioClaims: Claim[] = input.claims.filter((c) => c.source.kind === "audio");
+
+/** The sample document claims — the offline fallback for the upload flow (incl. aspirin 150mg). */
+export const documentFixtureClaims: Claim[] = input.claims.filter((c) => c.source.kind === "document");
 
 /**
  * Look up a subject entry by id. If a live session is active, resolve against its computed picture

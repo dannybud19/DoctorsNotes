@@ -5,7 +5,7 @@
  * discrepancy is "worth asking about", never a fault (AGENTS.md §1.1). The meaning is carried by the
  * dignified wording in STATUS_LABEL — colour is only a gentle accent.
  */
-import type { ClaimGroupStatus } from "@doctorsnotes/domain";
+import type { ClaimGroupStatus } from "@medthread/domain";
 
 export const colors = {
   bg: "#ffffff",

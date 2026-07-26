@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { Claim } from "@doctorsnotes/domain";
+import type { Claim } from "@medthread/domain";
 import { formatDate, sourceKindLabel, sourceSummary } from "../app/lib/data";
 import { colors, font, HIT_SLOP, MIN_TOUCH, record, space } from "../app/lib/theme";
 
@@ -88,6 +88,45 @@ export function LabelledRow({ label, onPress }: { label: string; onPress: () => 
     >
       <Text style={s.rowLabel}>{label}</Text>
       <Text style={s.rowMore}>›</Text>
+    </Pressable>
+  );
+}
+
+/** Home greeting: a warm "Hi, {name}" header + the plain-language prompt beneath it. */
+export function Greeting({ name }: { name: string }) {
+  return (
+    <View style={s.greeting}>
+      <Text style={s.greetingHi} accessibilityRole="header">
+        Hi, {name}
+      </Text>
+      <Text style={s.greetingSub}>What would you like to do today?</Text>
+    </View>
+  );
+}
+
+/**
+ * A large, full-width home action with a WORD label (no icons). `primary` fills it with the brand
+ * blue and white text — used for the single most important action on the screen. Comfortably exceeds
+ * the elder-first touch minimum.
+ */
+export function ActionButton({
+  label,
+  onPress,
+  primary,
+}: {
+  label: string;
+  onPress: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={HIT_SLOP}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[s.action, primary ? s.actionPrimary : s.actionDefault]}
+    >
+      <Text style={[s.actionText, primary ? s.actionTextPrimary : null]}>{label}</Text>
     </Pressable>
   );
 }
@@ -282,6 +321,21 @@ const s = StyleSheet.create({
   },
   rowLabel: { fontSize: font.label, fontWeight: "700", color: colors.text },
   rowMore: { fontSize: font.title, color: colors.textMuted },
+  greeting: { gap: space.xs, marginBottom: space.sm },
+  greetingHi: { fontSize: font.huge, fontWeight: "800", color: colors.text },
+  greetingSub: { fontSize: font.heading, color: colors.text, lineHeight: 32 },
+  action: {
+    minHeight: 76,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+  },
+  actionDefault: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  actionPrimary: { backgroundColor: colors.primary },
+  actionText: { fontSize: font.heading, fontWeight: "800", color: colors.text, textAlign: "center" },
+  actionTextPrimary: { color: colors.onPrimary },
   card: {
     borderRadius: 16,
     borderWidth: 1,

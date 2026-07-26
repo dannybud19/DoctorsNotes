@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { NotImplementedError } from "@doctorsnotes/domain";
-import type { Explainer } from "@doctorsnotes/ai";
+import { NotImplementedError } from "@medthread/domain";
+import type { Explainer } from "@medthread/ai";
 
 // AI runs server-side only (AGENTS.md §1.3). Node runtime for the (future) provider SDKs.
 export const runtime = "nodejs";

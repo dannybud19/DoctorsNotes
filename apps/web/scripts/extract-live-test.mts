@@ -3,7 +3,7 @@
  * Synthetic audio only. Run: tsx apps/web/scripts/extract-live-test.mts <path-to-audio>
  */
 import { readFileSync } from "node:fs";
-import { createClaudeExtractor, createScribeTranscriber } from "@doctorsnotes/ai";
+import { createClaudeExtractor, createScribeTranscriber } from "@medthread/ai";
 
 // Load ELEVENLABS_API_KEY / ANTHROPIC_API_KEY from apps/web/.env.local (no secrets printed).
 for (const line of readFileSync(new URL("../.env.local", import.meta.url), "utf8").split("\n")) {

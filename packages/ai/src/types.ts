@@ -3,7 +3,7 @@
  * Concrete providers (ElevenLabs Scribe, Claude) implement these; the interface keeps them swappable
  * and keeps provider SDKs out of the mobile bundle.
  */
-import type { Claim } from "@doctorsnotes/domain";
+import type { AskResponse, Claim, ClaimGroup } from "@medthread/domain";
 
 export interface TranscriptWord {
   text: string;
@@ -60,4 +60,31 @@ export interface ClaimExtractor {
 
 export interface Explainer {
   explain(input: { verbatimText: string; question?: string }): Promise<{ explanation: string }>;
+}
+
+export interface DocumentExtractor {
+  /**
+   * Turns a photographed clinical document into verbatim, document-sourced Claims via Claude vision
+   * (no OCR library). `verbatimText` is copied EXACTLY from the document (never reworded); `source`
+   * carries documentId + 1-based page + a normalized region. With no OCR text to cross-check against,
+   * the model's transcription IS the provenance — it is instructed to copy character-for-character.
+   */
+  extractFromImage(input: {
+    patientId: string;
+    observedAt: string;
+    documentId: string;
+    page?: number;
+    image: ArrayBuffer;
+    mediaType: string;
+  }): Promise<{ claims: Claim[] }>;
+}
+
+export interface Asker {
+  /**
+   * Answers a patient's question by RETRIEVAL over the provided `groups` (reconciled ClaimGroup[])
+   * ONLY. The model selects which existing claims are relevant and phrases the gap; it NEVER
+   * generates a medical fact. If no provided claim is relevant — or the model returns no usable claim
+   * ids — the result is `no_source` (never `answered`/`partial`). See `resolveAskResponse`.
+   */
+  ask(input: { question: string; groups: ClaimGroup[] }): Promise<AskResponse>;
 }

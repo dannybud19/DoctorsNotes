@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ReconcileInput, type Claim, type ClaimGroup } from "@doctorsnotes/domain";
+import { ReconcileInput, type Claim, type ClaimGroup } from "@medthread/domain";
 import { reconcile } from "./reconcile";
 import { buildQuestions, buildRunningPicture } from "./views";
 import metoprololFixture from "./fixtures/metoprolol.json";

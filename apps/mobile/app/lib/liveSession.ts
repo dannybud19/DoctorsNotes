@@ -1,4 +1,4 @@
-import type { Claim } from "@doctorsnotes/domain";
+import type { Claim } from "@medthread/domain";
 
 /**
  * In-memory handoff of the live extract response from the Recording screen to the Session screen.

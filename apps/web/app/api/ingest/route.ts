@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { NotImplementedError } from "@doctorsnotes/domain";
-import type { ClaimExtractor, Ocr, Transcriber } from "@doctorsnotes/ai";
+import { NotImplementedError } from "@medthread/domain";
+import type { ClaimExtractor, Ocr, Transcriber } from "@medthread/ai";
 
 // Server-side capture ingest: a recording or document image → verbatim Claims with provenance.
 export const runtime = "nodejs";

@@ -3,8 +3,8 @@
  * → Claude → Claim[]. Proves step 3 while the ElevenLabs key is missing the speech_to_text scope.
  */
 import { readFileSync } from "node:fs";
-import { createClaudeExtractor } from "@doctorsnotes/ai";
-import type { TranscriptResult } from "@doctorsnotes/ai";
+import { createClaudeExtractor } from "@medthread/ai";
+import type { TranscriptResult } from "@medthread/ai";
 
 for (const line of readFileSync(new URL("../.env.local", import.meta.url), "utf8").split("\n")) {
   const m = line.match(/^([A-Z0-9_]+)=(.*)$/);

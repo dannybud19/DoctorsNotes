@@ -25,7 +25,7 @@ jobs:
 
       - name: Guard — mobile has ZERO AI dependencies (invariant §1.3)
         run: |
-          if grep -Eiq '"(@?ai-sdk|@ai-sdk/[^"]+|ai|openai|@anthropic-ai/[^"]+|@deepgram/[^"]+|@doctorsnotes/ai)"[[:space:]]*:' apps/mobile/package.json; then
+          if grep -Eiq '"(@?ai-sdk|@ai-sdk/[^"]+|ai|openai|@anthropic-ai/[^"]+|@deepgram/[^"]+|@medthread/ai)"[[:space:]]*:' apps/mobile/package.json; then
             echo "::error::apps/mobile must not depend on any AI package"; exit 1
           fi
           echo "ok: no AI deps in apps/mobile"

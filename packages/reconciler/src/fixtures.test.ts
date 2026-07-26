@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AskResponse, PatientContext } from "@doctorsnotes/domain";
+import { AskResponse, PatientContext } from "@medthread/domain";
 import { fixtures } from "./fixtures/index";
 
 /**
