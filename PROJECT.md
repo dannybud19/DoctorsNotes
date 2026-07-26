@@ -1,11 +1,16 @@
-# DoctorsNotes — Living Project Doc
+# MedThread — Living Project Doc
 
 > **This is the single source of alignment.** It states what the product is, its features, the
 > decisions we've made (and *why*), and how we work. It is written first and **updated as work
 > proceeds** — every non-obvious decision gets appended here with its rationale, so context survives
 > across sessions and handoffs. If something here is stale, fixing it is the priority before code.
 
-Last updated: 2026-07-25
+> **Naming:** the product/app display name is **MedThread** (formerly "DoctorsNotes"). Workspace
+> packages are `@medthread/*`. The git repo/directory is still `DoctorsNotes` and the
+> `DoctorsNotesError` type name is unchanged — the rename (D16) was display strings + package names
+> only, deliberately not a repo move or a type refactor.
+
+Last updated: 2026-07-26
 
 ---
 
@@ -90,6 +95,9 @@ Newest first. Append here whenever a non-obvious call is made.
 | D13 | **A turn with `roleConfidence: "unknown"` MUST NEVER mint a Claim.** `SpeakerRef.roleConfidence` (`confirmed \| inferred \| unknown`) is required on every claim's audio provenance. | Attributing words to a clinician who may not have said them breaks provenance — the core trust of the product. Unknown-role turns are held as *pending turns*, never converted to Claims. Enforced in Agent X's extractor and reviewed on every change. |
 | D14 | **Single React version workspace-wide (18.3.1) via `pnpm.overrides`; reconcile comparator locale pinned to `"en-US"`.** | Removes the react-dom@19/react@18 peer split; makes reconcile output ordering byte-identical across server and device. |
 | D15 | **Domain frozen for Wave 1 with `AdmissionPhase`, `AskResponse`, and supporting state types (`SavedQuestion`, `DueMedication`, `Encounter`, `PatientContext`).** | Agents consume these; freezing them up front prevents mid-wave shared-file churn. `DueMedication` is verbatim from a *confirmed* claim (D5); `AskResponse` empty `claimIds` can only be `no_source`. |
+| D16 | **Renamed the product to MedThread** — display strings (mobile UI "Chat with MedThread", web title), `app.json` (`name`/`slug`/`scheme`), and the workspace packages `@doctorsnotes/* → @medthread/*` (names, imports, CI filters, lockfile). Repo/dir name and the `DoctorsNotesError` type name were deliberately left unchanged. | Product branding. Kept surgical (display + package names) to avoid a risky repo move / type refactor. |
+| D17 | **Live AI pipeline shipped**, all server-side in `packages/ai` behind `apps/web` Route Handlers: Scribe transcriber + Claude claim extractor (`/api/extract`, audio), Claude **Asker** (`/api/ask`, Q&A), Claude **vision** document extractor (`/api/extract-document`). Mobile calls them via `EXPO_PUBLIC_API_URL` and **always keeps a fixture fallback** on failure. | The demo must work live, but a network/provider failure must never leave a blank screen. Keeps AI out of the client (D6). |
+| D18 | **Ask/Chat is retrieval-only with a hard `no_source` guard.** A response with empty or irrelevant `claimIds` can only be `no_source` — never `answered`/`partial`; the model selects existing claims and never generates a medical fact. Enforced by the pure `resolveAskResponse` (packages/ai) + `AskResponse.parse` at the route, locked by network-free tests. | This is the product's core trust guarantee — the app surfaces what was said, it never invents an answer (invariant §1.1). |
 
 **Open design decisions (for Schmidt / design):**
 - **Uncorroborated → question volume.** Every single-source claim currently becomes a "question to
@@ -132,24 +140,37 @@ apps/mobile (Expo, zero AI)  ──►  apps/web (Next.js/Vercel)  ──►  Su
 
 ## 7. Status
 
+_Working branch: `feat/mvp-patient-slice` (tip `e5c0f29`). `main` is PR-based — landing there needs a
+PR merge, not a direct push._
+
 - **Foundation:** docs, monorepo, typed stubs, Supabase schema + RLS + seed, CI. **Done.**
-- **Now (MVP, fixture-driven):** real reconciler + running-picture/questions views + Expo screens
-  (home → verbatim/provenance drill-down → questions), rendering a synthetic 5-day admission fully
-  offline in Expo Go. 40 tests green (reconciler 32 incl. independent regression, supabase 8).
-  Capture / real AI / backend / reminders still stubbed.
-- **Next (follow-on):** real STT/OCR/explanation, reconciler internals, real capture + screens, the
-  EAS dev-build reminder, and the parallel build agents against `AGENTS.md` owned paths.
+- **MVP patient slice — interactive end-to-end (fixture + live):**
+  - Reconciler implemented + tested (34 tests: grouping/classification/ordering, confirmation
+    attachment, the fail-loudly `observedAt` guard, and the negative "never emits winner/severity/
+    advice" assertion). Fixtures aligned to Schmidt's real source — spoken aspirin **75mg** vs
+    discharge-letter **150mg** reconciles to **`worth_confirming`**.
+  - Expo screens all built: **home** (greeting + 4 large actions, "Chat with MedThread" primary),
+    recording, session/running-picture, verbatim/provenance drill-down, questions, consultation
+    history, recovery, reminder, **Chat/Ask**, **Update Medical Files** (photo/upload).
+  - **Live AI pipeline** wired (D17): `/api/extract` (audio→claims), `/api/ask` (retrieval Q&A with the
+    `no_source` guard, D18), `/api/extract-document` (Claude vision→document claims). Every mobile
+    network call keeps a fixture fallback. Tests: reconciler 34, ai 8, supabase 8; typecheck + depcruise
+    green across `@medthread/*`.
+- **Next:** open the PR `feat/mvp-patient-slice → main`; deploy `apps/web` to Vercel (needs
+  `ANTHROPIC_API_KEY` + `ELEVENLABS_API_KEY` set in Vercel), then point mobile `EXPO_PUBLIC_API_URL` at
+  the deployed URL; real capture polish, the EAS dev-build reminder, and post-discharge persistence.
 
-### Known test-coverage gaps (from independent verification, to close as logic lands)
+### Known gaps / gotchas (carry forward)
 
-- **Reconciler contract is unimplemented** — the 5 behavioural tests are `it.todo`. No executable
-  coverage of grouping/classification/ordering, or of the negative "never emits winner/severity/
-  advice" assertion (invariant §1.1) yet.
-- **Confirmation attachment is untested and unfixtured** — the current fixture has no confirmations.
-  Add a second fixture with a populated `Confirmation` + `fromClaimId`.
-- **Fixture breadth is thin** — no 3+-claim group, no value-normalization case ("25mg" vs "25 mg").
-- **Runtime RLS denial** — proven only by the static "RLS is enabled" test today; the pgTAP
-  cross-patient denial test needs a live Postgres (W3). Static test does not prove policies are
-  *restrictive*, only that they exist.
-- **Network-free is convention, not enforced** — nothing structurally blocks a future test adding
-  `fetch`. Consider a lint/guard when reconciler logic lands.
+- **Live AI paths are unexercised in CI** — extractor/asker/vision have no network-free coverage of the
+  provider call itself (the `resolveAskResponse` guard is unit-tested; the SDK calls are not mocked).
+  They've only been proven via typecheck + one manual E2E earlier in the build.
+- **Mobile `jest` is broken and deferred** — `apps/mobile/jest.config.js` references a missing
+  `jest.setup.js` and there are no mobile test files. Left as-is intentionally.
+- **`packages/reconciler/src/reconcile.ts` is classified as binary** by `file`/`grep` (a stray
+  non-text byte, pre-existing). It compiles/tests fine, but `grep -I` sweeps silently skip it — use
+  `grep -a` when searching. Worth cleaning up.
+- **Runtime RLS denial** — proven only by the static "RLS is enabled" test; the pgTAP cross-patient
+  denial test still needs a live Postgres (W3).
+- **Reconcile network-free is convention, not enforced** — nothing structurally blocks a future test
+  adding `fetch`; consider a lint/guard.
