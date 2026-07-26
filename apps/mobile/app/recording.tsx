@@ -38,7 +38,8 @@ export default function Recording() {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const holdRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const amplitude = useAmplitude(recorder, phase === "recording" && !paused);
+  // Two signals from one microphone: `level` is fast (bars), `envelope` is lazy (halo).
+  const { level, envelope } = useAmplitude(recorder, phase === "recording" && !paused);
 
   useEffect(() => {
     let active = true;
@@ -213,11 +214,11 @@ export default function Recording() {
       </Text>
 
       <View style={styles.stage}>
-        <PulseHalo amplitude={amplitude} />
+        <PulseHalo amplitude={envelope} />
         <View style={styles.controls}>
           <PauseButton paused={paused} onPress={togglePause} />
           <View style={styles.capsule}>
-            <WaveformBars amplitude={amplitude} />
+            <WaveformBars amplitude={level} />
           </View>
           <StopButton progress={holdProgress} onPressIn={startHold} onPressOut={endHold} />
         </View>
