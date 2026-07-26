@@ -2,9 +2,12 @@
   "recordingId": "rec-day5-discharge-consult",
   "turns": [
     { "atMs": 0, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "Morning Bill, good news, we think you're ready to go home today." },
-    { "atMs": 4200, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "You came in with what turned out to be a heart attack, we've treated that, and your heart's looking stable now on the scans." },
-    { "atMs": 9000, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "We're starting you on aspirin, one 75 milligram tablet once a day, that's to help stop clots forming — you'll take that every day going forward, indefinitely." },
-    { "atMs": 13500, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "We're also starting a new one, lisinopril, 10 milligrams once a day, that's for your blood pressure, also ongoing." }
+    { "atMs": 3000, "speaker": { "role": "patient", "roleConfidence": "confirmed" }, "verbatimText": "Home today? That's quicker than I thought." },
+    { "atMs": 5200, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "You came in with what turned out to be a heart attack, we've treated that, and your heart's looking stable now on the scans." },
+    { "atMs": 10000, "speaker": { "role": "patient", "roleConfidence": "confirmed" }, "verbatimText": "So my heart's alright now?" },
+    { "atMs": 11500, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "We're starting you on aspirin, one 75 milligram tablet once a day, that's to help stop clots forming — you'll take that every day going forward, indefinitely." },
+    { "atMs": 17000, "speaker": { "role": "patient", "roleConfidence": "confirmed" }, "verbatimText": "Just the one tablet a day?" },
+    { "atMs": 18500, "speaker": { "role": "consultant", "roleConfidence": "confirmed", "label": "Dr Kelly" }, "verbatimText": "We're also starting a new one, lisinopril, 10 milligrams once a day, that's for your blood pressure, also ongoing." }
   ],
   "claimIds": ["a1", "a2", "a3"]
 }

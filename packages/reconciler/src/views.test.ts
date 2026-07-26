@@ -8,9 +8,10 @@ import admissionFixture from "./fixtures/admission-5day.json";
 /**
  * Independent, contract-derived tests for the view builders (views.ts).
  *
- * Contract sources: AGENTS.md §1.1 (never assess/advise), PROJECT.md §2/§3 ("questions to ask" derive
- * strictly from worth_confirming + uncorroborated; latest is "the latest thing SAID", never "the
- * correct one"), and the JSDoc in views.ts. Offline & network-free: static JSON fixtures only.
+ * Contract sources: AGENTS.md §1.1 (never assess/advise), PROJECT.md §2/§3/§4 ("questions to ask"
+ * derive strictly from worth_confirming disagreements — single-source uncorroborated claims are NOT
+ * raised; latest is "the latest thing SAID", never "the correct one"), and the JSDoc in views.ts.
+ * Offline & network-free: static JSON fixtures only.
  */
 
 const metoprololGroups: ClaimGroup[] = reconcile(ReconcileInput.parse(metoprololFixture));
@@ -77,9 +78,9 @@ describe("buildRunningPicture", () => {
 });
 
 describe("buildQuestions", () => {
-  it("derives questions ONLY from worth_confirming and uncorroborated groups", () => {
+  it("derives questions ONLY from worth_confirming groups", () => {
     for (const q of buildQuestions(admissionGroups)) {
-      expect(["worth_confirming", "uncorroborated"]).toContain(q.status);
+      expect(q.status).toBe("worth_confirming");
     }
   });
 
@@ -94,9 +95,21 @@ describe("buildQuestions", () => {
     }
   });
 
-  it("emits one question per non-agreed group (count matches)", () => {
-    const nonAgreed = admissionGroups.filter((g) => g.status !== "agreed").length;
-    expect(buildQuestions(admissionGroups).length).toBe(nonAgreed);
+  it("raises NO question for a single-source 'uncorroborated' group", () => {
+    const uncorroborated = admissionGroups
+      .filter((g) => g.status === "uncorroborated")
+      .map((g) => g.subject);
+    expect(uncorroborated.length).toBeGreaterThan(0); // guard: the fixture actually has single-source groups
+    const questionSubjects = new Set(buildQuestions(admissionGroups).map((q) => q.subject));
+    for (const subject of uncorroborated) {
+      expect(questionSubjects.has(subject)).toBe(false);
+    }
+  });
+
+  it("emits one question per worth_confirming group (count matches)", () => {
+    const worthConfirming = admissionGroups.filter((g) => g.status === "worth_confirming").length;
+    expect(worthConfirming).toBeGreaterThan(0); // guard: the fixture has a genuine conflict
+    expect(buildQuestions(admissionGroups).length).toBe(worthConfirming);
   });
 
   it("every prompt is phrased as a question and carries no imperative advice", () => {

@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { BackButton, LabelledRow, PlainButton, Row, Screen, SectionTitle } from "../components/ui";
+import { PhaseSwitch } from "../components/PhaseSwitch";
 import { dueMedications, encouragement, entryId, patientAge, patientName, subjectLabel } from "./lib/data";
 import { colors, font, NEEDS_CONFIRMING, space } from "./lib/theme";
 
@@ -14,6 +15,8 @@ export default function Recovery() {
   return (
     <Screen scroll>
       <BackButton onPress={() => router.back()} />
+      {/* Discharge phase toggle: move back to the admitted phase (Home) and back again. */}
+      <PhaseSwitch current="recovery" />
       <Text style={styles.h1}>Good morning, {patientName}</Text>
       <Text style={styles.sub}>{patientName}, {patientAge}</Text>
 
