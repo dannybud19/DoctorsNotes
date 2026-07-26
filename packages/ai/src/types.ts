@@ -64,15 +64,21 @@ export interface Explainer {
 
 export interface DocumentExtractor {
   /**
-   * Turns a photographed clinical document into verbatim, document-sourced Claims via Claude vision
-   * (no OCR library). `verbatimText` is copied EXACTLY from the document (never reworded); `source`
-   * carries documentId + 1-based page + a normalized region. With no OCR text to cross-check against,
-   * the model's transcription IS the provenance — it is instructed to copy character-for-character.
+   * Turns a clinical document — a photo (image/*) or a PDF — into verbatim, document-sourced Claims
+   * via Claude vision (no OCR library). `verbatimText` is copied EXACTLY from the document (never
+   * reworded); `source` carries documentId + 1-based page + a normalized region. For a multi-page
+   * PDF the page is reported per claim; for a single photo it falls back to `page`. With no OCR text
+   * to cross-check against, the model's transcription IS the provenance — it is instructed to copy
+   * character-for-character.
+   *
+   * `mediaType` is the file's MIME: one of image/jpeg|png|gif|webp, or application/pdf. Anything
+   * else is rejected loudly.
    */
-  extractFromImage(input: {
+  extractFromDocument(input: {
     patientId: string;
     observedAt: string;
     documentId: string;
+    /** 1-based fallback page used when the model reports none (e.g. a single photo). */
     page?: number;
     image: ArrayBuffer;
     mediaType: string;

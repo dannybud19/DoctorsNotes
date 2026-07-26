@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClaudeDocumentExtractor } from "@medthread/ai";
 
-// Document path: a photographed clinical document → Claude vision → verbatim, document-sourced claims.
+// Document path: a clinical document (photo or PDF) → Claude vision → verbatim, document-sourced claims.
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// Multi-page PDFs take longer than a single photo; match the audio route's ceiling.
+export const maxDuration = 300;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -50,7 +51,7 @@ export async function POST(req: Request): Promise<Response> {
 
   let claims;
   try {
-    ({ claims } = await createClaudeDocumentExtractor(anthropicKey).extractFromImage({
+    ({ claims } = await createClaudeDocumentExtractor(anthropicKey).extractFromDocument({
       patientId,
       observedAt,
       documentId,

@@ -6,9 +6,46 @@ import type { DocumentExtractor } from "../types";
 
 const MODEL = "claude-opus-4-8";
 
-// Anthropic accepts these base64 image media types. Anything else is rejected loudly at the boundary.
-const SUPPORTED_MEDIA = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
-type SupportedMedia = (typeof SUPPORTED_MEDIA)[number];
+// Anthropic accepts these base64 image media types, plus PDFs (as a `document` block). Anything
+// else is rejected loudly at the boundary (see documentContentBlock).
+const IMAGE_MEDIA = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
+type ImageMedia = (typeof IMAGE_MEDIA)[number];
+const PDF_MEDIA = "application/pdf";
+
+/**
+ * The Anthropic content block for a base64-encoded clinical document — pure, so it can be tested
+ * with no network. Photos become an `image` block; a PDF becomes a `document` block (Claude renders
+ * each page). Any other media type is rejected loudly at the boundary (fail-loudly, AGENTS.md §1.6).
+ */
+export function documentContentBlock(
+  mediaType: string,
+  base64: string,
+): Anthropic.ContentBlockParam {
+  if (mediaType === PDF_MEDIA) {
+    return { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } };
+  }
+  if ((IMAGE_MEDIA as readonly string[]).includes(mediaType)) {
+    return {
+      type: "image",
+      source: { type: "base64", media_type: mediaType as ImageMedia, data: base64 },
+    };
+  }
+  throw new Error(
+    `createClaudeDocumentExtractor: unsupported document type "${mediaType}" (expected ${PDF_MEDIA} or one of ${IMAGE_MEDIA.join(", ")})`,
+  );
+}
+
+/**
+ * The 1-based page a claim sits on. For a multi-page PDF the model reports the page per claim; for a
+ * single photo there is no page, so we fall back to the page passed to the extractor. Pure, so the
+ * clamping is unit-tested with no network. NaN / <1 / absent collapse to the fallback.
+ */
+export function resolvePage(modelPage: number | undefined, fallback: number): number {
+  if (typeof modelPage === "number" && Number.isFinite(modelPage) && modelPage >= 1) {
+    return Math.floor(modelPage);
+  }
+  return fallback;
+}
 
 // A normalized [0,1] box the model may estimate for where the text sits on the page. Optional — when
 // absent or malformed we fall back to the whole page. The precise anchor is always the verbatim text.
@@ -29,6 +66,8 @@ const ExtractionSchema = z.object({
       value: z.string(),
       verbatimText: z.string(),
       region: RegionSchema,
+      /** 1-based page the statement sits on (multi-page PDFs). Absent/invalid → the passed page. */
+      page: z.number().optional(),
     }),
   ),
 });
@@ -64,6 +103,11 @@ const EXTRACTION_TOOL: Anthropic.Tool = {
                 height: { type: "number" },
               },
             },
+            page: {
+              type: "integer",
+              description:
+                "For a multi-page PDF only: the 1-based page number this statement appears on. Omit for a single image.",
+            },
           },
         },
       },
@@ -71,9 +115,9 @@ const EXTRACTION_TOOL: Anthropic.Tool = {
   },
 };
 
-const SYSTEM = `You read a photographed clinical document (e.g. a discharge letter or medication chart) and record exactly what is WRITTEN on it — verbatim, with provenance. You never assess, diagnose, advise, or infer anything that is not printed on the page.
+const SYSTEM = `You read a clinical document (e.g. a discharge letter or medication chart), supplied as either a photo or a PDF, and record exactly what is WRITTEN on it — verbatim, with provenance. You never assess, diagnose, advise, or infer anything that is not printed on the page.
 
-Extract discrete clinical statements about the patient (a medication + dose, a diagnosis, a test/result, a follow-up, an instruction). For each: a category, a normalized lowercase hyphenated subject (e.g. "aspirin", "cardiology-clinic"), a short value (e.g. "150mg once daily"), and verbatimText = the EXACT text as printed on the document, copied character-for-character — never reworded, summarized, corrected, or completed. Optionally include an approximate [0,1]-normalized region for where the text appears.
+Extract discrete clinical statements about the patient (a medication + dose, a diagnosis, a test/result, a follow-up, an instruction). For each: a category, a normalized lowercase hyphenated subject (e.g. "aspirin", "cardiology-clinic"), a short value (e.g. "150mg once daily"), and verbatimText = the EXACT text as printed on the document, copied character-for-character — never reworded, summarized, corrected, or completed. Optionally include an approximate [0,1]-normalized region for where the text appears. For a multi-page PDF, include the 1-based page each statement appears on.
 
 Only record statements actually written on the document. Do not invent content. Record your answer by calling record_document_claims.`;
 
@@ -101,17 +145,15 @@ export function createClaudeDocumentExtractor(apiKey: string): DocumentExtractor
   const client = new Anthropic({ apiKey });
 
   return {
-    async extractFromImage({ patientId, observedAt, documentId, page = 1, image, mediaType }) {
-      if (!SUPPORTED_MEDIA.includes(mediaType as SupportedMedia)) {
-        throw new Error(
-          `createClaudeDocumentExtractor: unsupported image type "${mediaType}" (expected one of ${SUPPORTED_MEDIA.join(", ")})`,
-        );
-      }
+    async extractFromDocument({ patientId, observedAt, documentId, page = 1, image, mediaType }) {
       const base64 = Buffer.from(image).toString("base64");
+      // Throws loudly on an unsupported media type, before any network call.
+      const documentBlock = documentContentBlock(mediaType, base64);
 
       const res = await client.messages.create({
         model: MODEL,
-        max_tokens: 4096,
+        // Headroom for a multi-page PDF, which can yield many more claims than a single photo.
+        max_tokens: 8192,
         system: SYSTEM,
         tools: [EXTRACTION_TOOL],
         tool_choice: { type: "tool", name: EXTRACTION_TOOL.name },
@@ -119,10 +161,7 @@ export function createClaudeDocumentExtractor(apiKey: string): DocumentExtractor
           {
             role: "user",
             content: [
-              {
-                type: "image",
-                source: { type: "base64", media_type: mediaType as SupportedMedia, data: base64 },
-              },
+              documentBlock,
               { type: "text", text: "Record the clinical statements written on this document." },
             ],
           },
@@ -145,7 +184,7 @@ export function createClaudeDocumentExtractor(apiKey: string): DocumentExtractor
         source: {
           kind: "document",
           documentId,
-          page,
+          page: resolvePage(c.page, page),
           region: toRegion(c.region),
         },
         observedAt,

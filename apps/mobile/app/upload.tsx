@@ -1,3 +1,4 @@
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
@@ -8,6 +9,32 @@ import { setLiveClaims } from "./lib/liveSession";
 import { colors, font, HIT_SLOP, MIN_TOUCH, space } from "./lib/theme";
 
 type Phase = "idle" | "uploading" | "error";
+
+// A picked document, normalized across the two pickers: expo-image-picker (camera → { fileName })
+// and expo-document-picker (Files → { name }). The server accepts image/* or application/pdf.
+type PickedFile = { uri: string; mimeType: string; name: string };
+
+/** A filename for an asset that arrived without one, from its MIME. */
+function fallbackName(mimeType: string): string {
+  const ext = mimeType === "application/pdf" ? "pdf" : (mimeType.split("/")[1] ?? "jpg");
+  return `document.${ext}`;
+}
+
+/** Best-effort MIME from a filename when the picker didn't supply one (Files app is usually reliable). */
+function guessMimeFromName(name: string): string {
+  switch (name.split(".").pop()?.toLowerCase()) {
+    case "pdf":
+      return "application/pdf";
+    case "png":
+      return "image/png";
+    case "gif":
+      return "image/gif";
+    case "webp":
+      return "image/webp";
+    default:
+      return "image/jpeg";
+  }
+}
 
 // Screen 4 — Update Medical Files (LIVE). Pick or photograph a document, send it to /api/extract-document
 // (Claude vision → verbatim, document-sourced claims), merge with the spoken claims, and open the
@@ -29,18 +56,16 @@ export default function Upload() {
     router.push("/session");
   }
 
-  async function extractDocument(asset: ImagePicker.ImagePickerAsset) {
+  async function extractDocument(file: PickedFile) {
     const apiBase = process.env.EXPO_PUBLIC_API_URL;
     if (!apiBase) throw new Error("EXPO_PUBLIC_API_URL is not set.");
-    const mimeType = asset.mimeType ?? "image/jpeg";
-    const name = asset.fileName ?? `document.${mimeType.split("/")[1] ?? "jpg"}`;
 
     const form = new FormData();
     if (Platform.OS === "web") {
-      const blob = await (await fetch(asset.uri)).blob();
-      form.append("image", blob, name);
+      const blob = await (await fetch(file.uri)).blob();
+      form.append("image", blob, file.name);
     } else {
-      form.append("image", { uri: asset.uri, name, type: mimeType } as unknown as Blob);
+      form.append("image", { uri: file.uri, name: file.name, type: file.mimeType } as unknown as Blob);
     }
     form.append("patientId", "synthetic-patient-1");
     form.append("documentId", `doc-${Date.now()}`);
@@ -53,30 +78,40 @@ export default function Upload() {
     return (data.claims ?? []) as typeof audioClaims;
   }
 
+  /** Take a photo (needs camera permission). Returns null if denied or cancelled. */
+  async function pickCamera(): Promise<PickedFile | null> {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      fail("Camera access is needed to photograph the document. You can still use a sample.");
+      return null;
+    }
+    const result = await ImagePicker.launchCameraAsync({ quality: 1 });
+    if (result.canceled) return null;
+    const asset = result.assets[0];
+    if (!asset) return null;
+    const mimeType = asset.mimeType ?? "image/jpeg";
+    return { uri: asset.uri, mimeType, name: asset.fileName ?? fallbackName(mimeType) };
+  }
+
+  /** Choose a photo or PDF from the Files app (no permission prompt). Returns null if cancelled. */
+  async function pickFile(): Promise<PickedFile | null> {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["image/*", "application/pdf"],
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled) return null;
+    const asset = result.assets?.[0];
+    if (!asset) return null;
+    const name = asset.name ?? "document";
+    return { uri: asset.uri, mimeType: asset.mimeType ?? guessMimeFromName(name), name };
+  }
+
   async function pick(source: "library" | "camera") {
     try {
-      const perm =
-        source === "camera"
-          ? await ImagePicker.requestCameraPermissionsAsync()
-          : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!perm.granted) {
-        fail(
-          source === "camera"
-            ? "Camera access is needed to photograph the document. You can still use a sample."
-            : "Photo access is needed to choose a file. You can still use a sample.",
-        );
-        return;
-      }
-      const result =
-        source === "camera"
-          ? await ImagePicker.launchCameraAsync({ quality: 1 })
-          : await ImagePicker.launchImageLibraryAsync({ quality: 1 });
-      if (result.canceled) return;
-      const asset = result.assets[0];
-      if (!asset) return;
-
+      const file = source === "camera" ? await pickCamera() : await pickFile();
+      if (!file) return;
       setPhase("uploading");
-      const docClaims = await extractDocument(asset);
+      const docClaims = await extractDocument(file);
       showMerged(docClaims);
     } catch (e) {
       fail(e instanceof Error ? e.message : "Something went wrong reading that document.");
@@ -134,12 +169,12 @@ export default function Upload() {
       <BackButton onPress={() => router.back()} />
       <Text style={styles.h1}>Add your discharge note</Text>
       <Text style={styles.body}>
-        Take a photo of a letter or medication chart. We'll show you, word for word, what it says —
-        alongside what you were told at your bedside.
+        Take a photo, or choose a photo or PDF of a letter or medication chart. We'll show you, word
+        for word, what it says — alongside what you were told at your bedside.
       </Text>
 
-      <PlainButton label="Choose a file" onPress={() => pick("library")} />
       <PlainButton label="Use camera" onPress={() => pick("camera")} />
+      <PlainButton label="Choose a file (photo or PDF)" onPress={() => pick("library")} />
 
       <Pressable
         onPress={useSample}
