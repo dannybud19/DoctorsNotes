@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { AskResponse, GeneratedQuestion } from "@medthread/domain";
-import { BackButton } from "../components/ui";
+import { WarmBack } from "../components/warmUi";
 import { MessageBubble } from "../components/chat/MessageBubble";
 import { AnswerText } from "../components/chat/AnswerText";
 import { QuestionsToAsk, type QAItem } from "../components/chat/QuestionsToAsk";
@@ -195,7 +195,7 @@ export default function Ask() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <BackButton onPress={() => router.back()} />
+        <WarmBack onPress={() => router.back()} />
         <Text style={styles.title} accessibilityRole="header">
           Chat with MedThread
         </Text>
