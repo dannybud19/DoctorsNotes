@@ -1,8 +1,7 @@
 import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { BackButton } from "../components/ui";
 import { TranscriptBubble } from "../components/chat/TranscriptBubble";
-import { WarmClaimCard, WarmScreen, WarmSectionTitle } from "../components/warmUi";
+import { WarmBack, WarmClaimCard, WarmScreen, WarmSectionTitle } from "../components/warmUi";
 import { warm } from "../components/warm";
 import {
   buildSession,
@@ -41,7 +40,7 @@ export default function Session() {
 
   return (
     <WarmScreen scroll>
-      <BackButton onPress={() => router.back()} />
+      <WarmBack onPress={() => router.back()} />
       <View style={styles.headerRow}>
         <Text style={styles.h1} accessibilityRole="header">
           Your recording
