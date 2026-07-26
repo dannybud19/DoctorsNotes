@@ -1,37 +1,19 @@
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import { LabelledRow, MicButton, Screen, WaveformPill } from "../components/ui";
-import { todayLabel } from "./lib/data";
-import { colors, font, space } from "./lib/theme";
+import { ActionButton, Greeting, Screen } from "../components/ui";
+import { patientName } from "./lib/data";
 
-// Screen 1 — Home (inpatient). One primary action: the mic. Everything else is a labelled row.
+// Screen 1 — Home. A warm greeting, then four large word-labelled actions. "Chat with BeSide" is the
+// single visually-primary action. All presentation lives in components/ui.tsx so styling stays separable.
 export default function Home() {
   const router = useRouter();
   return (
     <Screen scroll>
-      <Text style={styles.date} accessibilityRole="header">
-        {todayLabel}
-      </Text>
+      <Greeting name={patientName} />
 
-      <View style={styles.hero}>
-        <MicButton label="Record" onPress={() => router.push("/recording")} />
-        <Text style={styles.heroHint}>Tap to record what's said at your bedside.</Text>
-        <WaveformPill />
-      </View>
-
-      <View style={styles.list}>
-        <LabelledRow label="Consultation history" onPress={() => router.push("/history")} />
-        <LabelledRow label="Ask" onPress={() => router.push("/ask")} />
-        <LabelledRow label="Questions to clarify" onPress={() => router.push("/questions")} />
-        <LabelledRow label="Upload medical files" onPress={() => router.push("/upload")} />
-      </View>
+      <ActionButton label="Consultation History" onPress={() => router.push("/history")} />
+      <ActionButton label="Record a Consultation" onPress={() => router.push("/recording")} />
+      <ActionButton label="Chat with BeSide" primary onPress={() => router.push("/ask")} />
+      <ActionButton label="Update Medical Files" onPress={() => router.push("/upload")} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  date: { fontSize: font.label, fontWeight: "700", color: colors.textMuted, textAlign: "center" },
-  hero: { alignItems: "center", gap: space.md },
-  heroHint: { fontSize: font.body, color: colors.text, textAlign: "center", lineHeight: 30 },
-  list: { gap: space.md, marginTop: space.md },
-});
