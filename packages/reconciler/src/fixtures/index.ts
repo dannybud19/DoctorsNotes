@@ -1,4 +1,3 @@
-import metoprolol from "./metoprolol.json";
 import admission5day from "./admission-5day.json";
 import askResponses from "./ask-responses.json";
 import generatedQuestions from "./generated-questions.json";
@@ -12,7 +11,6 @@ import patientContexts from "./patient-contexts.json";
  * at the point of use so malformed fixtures fail loudly.
  */
 export const fixtures = {
-  metoprolol,
   admission5day,
   askResponses,
   generatedQuestions,

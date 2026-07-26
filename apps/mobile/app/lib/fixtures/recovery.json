@@ -1,10 +1,5 @@
 {
   "patientName": "Bill",
   "patientAge": 82,
-  "dueMedications": [
-    { "id": "due-aspirin", "subject": "aspirin", "fromClaimId": "a2", "time": "8:00 am" },
-    { "id": "due-lisinopril", "subject": "lisinopril", "fromClaimId": "a3", "time": "8:00 am" },
-    { "id": "due-metformin", "subject": "metformin", "fromClaimId": "a4", "time": "8:00 am and 8:00 pm" }
-  ],
   "encouragement": "You're doing really well. One day at a time — and every question you ask helps."
 }

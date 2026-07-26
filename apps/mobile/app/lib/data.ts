@@ -9,10 +9,13 @@
 import { ReconcileInput } from "@medthread/domain";
 import type { Claim, ClaimGroup, ClaimSource, GeneratedQuestion } from "@medthread/domain";
 import {
+  buildMedicationSchedule,
   buildQuestions,
   buildRunningPicture,
   fixtures,
   reconcile,
+  type DoseSlot,
+  type MedicationGap,
   type Question,
   type RunningPictureEntry,
 } from "@medthread/reconciler";
@@ -217,27 +220,60 @@ export const patientName: string = recoveryRaw.patientName;
 export const patientAge: number = recoveryRaw.patientAge;
 export const encouragement: string = recoveryRaw.encouragement;
 
+/** The state of a medication row. Only a `scheduled` row can ever become a real reminder. */
+export type DueMedStatus = "scheduled" | "needs_confirming" | "ask_frequency";
+
 /**
- * A "What to take today" row. `confirmed` is DERIVED from the reconciled Confirmation — never
- * assumed. An unconfirmed row must render as "needs confirming", never as a scheduled dose (D5).
+ * A "Today's reminders" row. Everything is DERIVED from the reconciler — never the fixture's old
+ * hardcoded clock time. A row is `scheduled` only when the patient has confirmed the dose (D5) AND
+ * its frequency could be parsed from the confirmed value (`slots`). Otherwise it is a knowledge gap
+ * shown on the card ("needs confirming" / "ask how often"), never a fabricated reminder. Clock times
+ * are set by the patient later — there is no invented time here.
  */
 export type DueMedRow = {
   id: string;
   subject: string;
   claim: Claim;
-  confirmed: boolean;
-  time: string;
+  status: DueMedStatus;
+  /** Parsed dose slots — present (possibly labelled) only when `status === "scheduled"`. */
+  slots: DoseSlot[];
 };
 
-export const dueMedications: DueMedRow[] = recoveryRaw.dueMedications.map((dm) => {
-  const claim = claimsById[dm.fromClaimId];
-  if (!claim) {
-    // Fail loudly — a due-med row must always trace to a real claim (provenance).
-    throw new Error(`recovery.json: dueMedication "${dm.id}" references unknown claim "${dm.fromClaimId}"`);
+const medicationSchedule = buildMedicationSchedule(groups);
+
+/** Medications that cannot be scheduled yet — the knowledge gaps, kept for the questions surfaces. */
+export const medicationGaps: MedicationGap[] = medicationSchedule.gaps;
+
+export const dueMedications: DueMedRow[] = [
+  ...medicationSchedule.reminders.map((r): DueMedRow => {
+    const claim = claimsById[r.fromClaimId];
+    if (!claim) {
+      // Fail loudly — a reminder must always trace to a real confirmed claim (provenance).
+      throw new Error(
+        `buildMedicationSchedule: reminder "${r.subject}" references unknown claim "${r.fromClaimId}"`,
+      );
+    }
+    return { id: `due-${r.subject}`, subject: r.subject, claim, status: "scheduled", slots: r.slots };
+  }),
+  ...medicationSchedule.gaps.map((g): DueMedRow => ({
+    id: `gap-${g.subject}`,
+    subject: g.subject,
+    // The newest verbatim mention carries the words + provenance shown on the card.
+    claim: g.fromClaims[g.fromClaims.length - 1]!,
+    status: g.reason === "no_frequency" ? "ask_frequency" : "needs_confirming",
+    slots: [],
+  })),
+];
+
+/** A friendly "how often" label from parsed dose slots — verbatim-derived, never a clock time. */
+export function scheduleLabel(slots: DoseSlot[]): string {
+  const labels = slots.filter((s) => s.label).map((s) => s.label!);
+  if (labels.length > 0 && labels.length === slots.length) {
+    return labels.map((l) => l.charAt(0).toUpperCase() + l.slice(1)).join(" · ");
   }
-  const entry = runningPicture.find((g) => g.subject === dm.subject);
-  return { id: dm.id, subject: dm.subject, claim, confirmed: Boolean(entry?.confirmation), time: dm.time };
-});
+  const n = slots.length;
+  return n === 1 ? "Once a day" : n === 2 ? "Twice a day" : `${n} times a day`;
+}
 
 /**
  * Compute the three Session sections from an arbitrary claim set (live response OR fixture), using

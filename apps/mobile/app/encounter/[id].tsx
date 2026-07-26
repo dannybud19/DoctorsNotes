@@ -26,18 +26,22 @@ export default function EncounterDetail() {
       <Row label="When" value={formatDateTime(enc.occurredAt)} />
       <Row label="Length" value={`${Math.round(enc.durationMs / 60000)} min`} />
 
-      <SectionTitle>Transcript — extracted claims highlighted</SectionTitle>
-      {enc.claimIds.map((cid) => {
-        const c = getClaim(cid);
-        return c ? (
-          <View key={cid} style={styles.claim}>
-            <Text style={styles.verbatim}>"{c.verbatimText}"</Text>
-            <Text style={styles.meta}>
-              {c.category} · {c.subject}
-            </Text>
-          </View>
-        ) : null;
-      })}
+      <SectionTitle>Transcript</SectionTitle>
+      {enc.claimIds.length === 0 ? (
+        <Text style={styles.empty}>No transcript was captured for this visit.</Text>
+      ) : (
+        enc.claimIds.map((cid) => {
+          const c = getClaim(cid);
+          return c ? (
+            <View key={cid} style={styles.claim}>
+              <Text style={styles.verbatim}>"{c.verbatimText}"</Text>
+              <Text style={styles.meta}>
+                {c.category} · {c.subject}
+              </Text>
+            </View>
+          ) : null;
+        })
+      )}
     </Screen>
   );
 }
@@ -54,4 +58,5 @@ const styles = StyleSheet.create({
   },
   verbatim: { fontSize: font.body, color: colors.text, lineHeight: 30 },
   meta: { fontSize: font.label, color: colors.textMuted },
+  empty: { fontSize: font.body, color: colors.textMuted, lineHeight: 30 },
 });

@@ -3,13 +3,30 @@
     "name": "MedThread",
     "slug": "medthread",
     "scheme": "medthread",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.medthread.app",
+      "buildNumber": "1",
+      "supportsTablet": true
+    },
     "plugins": [
       "expo-router",
-      "expo-audio"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "MedThread records what clinicians say at your bedside so it can show you their words, exactly as they said them."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "MedThread uses the camera to photograph letters and medication charts so it can show you what they say, word for word.",
+          "photosPermission": "MedThread accesses your photos so you can add a photo of a letter or medication chart."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

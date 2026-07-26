@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Claim } from "@medthread/domain";
@@ -227,6 +227,10 @@ export function HoldToConfirm({
 }) {
   const [progress, setProgress] = useState(0);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Clear the interval if the component unmounts mid-hold, so it can't setState after unmount.
+  useEffect(() => () => {
+    if (ref.current) clearInterval(ref.current);
+  }, []);
   function stop() {
     if (ref.current) clearInterval(ref.current);
     ref.current = null;
