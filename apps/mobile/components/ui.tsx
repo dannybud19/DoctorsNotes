@@ -97,8 +97,9 @@ export function LabelledRow({ label, onPress }: { label: string; onPress: () => 
 /**
  * Home greeting: a warm "Hi, {name}" header + the plain-language prompt beneath it.
  *
- * Centred, with the name in the home accent. Used by `app/index.tsx` only, which is why it carries
- * the home palette rather than the shared theme.
+ * Centred, with the name larger than the surrounding words and in the home accent. The name is a
+ * nested <Text> so the two sizes share a baseline. Used by `app/index.tsx` only, which is why it
+ * carries the home palette rather than the shared theme.
  */
 export function Greeting({ name }: { name: string }) {
   return (
@@ -340,27 +341,34 @@ const s = StyleSheet.create({
   rowMore: { fontSize: font.title, color: colors.textMuted },
   // --- Home-only styles (Greeting + ActionButton). Both components are used by app/index.tsx alone,
   // so the warm home palette lives here without affecting any other screen.
-  greeting: { gap: space.sm, marginBottom: space.lg, alignItems: "center" },
+  // No marginBottom here on purpose: the gap down to the buttons is owned solely by `content.gap`
+  // in app/index.tsx. Setting both made that gap 56px (32 + 24) when it read as 32.
+  greeting: { gap: space.xs, marginBottom: 0, alignItems: "center" },
+  // The name is larger than the words around it. Because it is a NESTED <Text>, React Native aligns
+  // the two sizes on their shared BASELINE — bottoms level — rather than centring them. That is the
+  // intended look; do not add alignItems or a manual offset to "fix" it.
   greetingHi: { fontSize: font.title, fontWeight: "700", color: warm.ink, textAlign: "center" },
-  greetingName: { color: warm.terracotta, fontWeight: "800" },
+  greetingName: { fontSize: 40, color: warm.terracotta, fontWeight: "800" },
   greetingSub: {
     fontSize: font.huge,
     fontWeight: "800",
     color: warm.ink,
     textAlign: "center",
-    lineHeight: 42,
+    lineHeight: 44,
   },
   action: {
-    minHeight: actionSize.minHeight,
+    // Roomier than the shared `actionSize` default: taller, with the contents further from the
+    // pill's edges. Set locally rather than by editing warm.ts, which Danny's chat components import.
+    minHeight: 104,
     borderRadius: actionSize.radius,
     borderWidth: 1,
     borderColor: warm.hairline,
     backgroundColor: warm.card,
     flexDirection: "row",
     alignItems: "center",
-    gap: actionSize.gap,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.md,
+    gap: space.lg,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.lg,
     // Soft lift off the cream background. `elevation` is the Android equivalent.
     shadowColor: "#8a7f6d",
     shadowOpacity: 0.16,
@@ -369,7 +377,7 @@ const s = StyleSheet.create({
     elevation: 2,
   },
   actionIcon: { width: actionSize.iconSize, alignItems: "center", justifyContent: "center" },
-  actionText: { flex: 1, fontSize: font.heading, fontWeight: "800", color: warm.ink },
+  actionText: { flex: 1, fontSize: font.heading, fontWeight: "800", color: warm.ink, lineHeight: 30 },
   card: {
     borderRadius: 16,
     borderWidth: 1,

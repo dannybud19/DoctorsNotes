@@ -8,6 +8,7 @@ import { WaveformBars } from "../components/recording/WaveformBars";
 import { PauseButton, StopButton } from "../components/recording/controls";
 import { useAmplitude } from "../components/recording/useAmplitude";
 import { warm } from "../components/warm";
+import { WarmBack } from "../components/warmUi";
 import { todayLabel } from "./lib/data";
 import { setLiveClaims } from "./lib/liveSession";
 import { colors, font, HIT_SLOP, MIN_TOUCH, space } from "./lib/theme";
@@ -32,6 +33,15 @@ export default function Recording() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [holdProgress, setHoldProgress] = useState(0);
   const [paused, setPaused] = useState(false);
+  /**
+   * Shown when back is tapped mid-recording. Leaving unmounts the screen, and the effect cleanup
+   * stops the recorder — so walking away silently throws the consultation out. This is the same
+   * accidental-loss the hold-to-stop gesture guards against, so it is confirmed rather than instant.
+   *
+   * Rendered in-screen rather than via `Alert.alert`, which react-native-web does not implement:
+   * on web the dialog would never appear and back would look broken.
+   */
+  const [confirmLeave, setConfirmLeave] = useState(false);
   /** Time banked by earlier run segments; the current segment is added on top while running. */
   const bankedRef = useRef(0);
   const segmentStartRef = useRef(0);
@@ -160,7 +170,15 @@ export default function Recording() {
     setHoldProgress(0);
   }
 
+  /** Back: instant when there is nothing to lose, confirmed while a recording is actually running. */
+  function requestBack() {
+    if (phase === "recording") setConfirmLeave(true);
+    else router.back();
+  }
+
   if (phase === "uploading") {
+    // No back control here on purpose: this lasts a few seconds, and leaving would discard the
+    // extraction that was just captured.
     return (
       <Shell>
         <View style={styles.center}>
@@ -175,6 +193,7 @@ export default function Recording() {
   if (phase === "error") {
     return (
       <Shell>
+        <WarmBack onPress={() => router.back()} />
         <View style={styles.center}>
           <Text style={styles.errorTitle}>We couldn't process that recording</Text>
           <Text style={styles.errorMsg}>{errorMsg}</Text>
@@ -195,6 +214,35 @@ export default function Recording() {
   // starting | recording
   return (
     <Shell>
+      <WarmBack onPress={requestBack} />
+
+      {confirmLeave ? (
+        <View style={styles.confirm} accessibilityViewIsModal>
+          <Text style={styles.confirmTitle} accessibilityRole="header">
+            Stop recording and leave?
+          </Text>
+          <Text style={styles.confirmBody}>This recording won't be saved.</Text>
+          <Pressable
+            onPress={() => setConfirmLeave(false)}
+            hitSlop={HIT_SLOP}
+            accessibilityRole="button"
+            accessibilityLabel="Keep recording"
+            style={styles.primaryBtn}
+          >
+            <Text style={styles.primaryBtnText}>Keep recording</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={HIT_SLOP}
+            accessibilityRole="button"
+            accessibilityLabel="Stop recording and leave without saving"
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryBtnText}>Stop and leave</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <Text style={styles.date} accessibilityRole="header">
         {todayLabel}
       </Text>
@@ -286,6 +334,18 @@ const styles = StyleSheet.create({
   /** Reserved for the live transcript — the tall region the compact header above frees up. */
   transcript: { minHeight: 260 },
 
+  // Confirm-leave panel. Sits inline above the capture cluster rather than in a system dialog, so it
+  // behaves identically on web (where react-native-web has no `Alert`) and on a device.
+  confirm: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: warm.hairline,
+    backgroundColor: warm.card,
+    padding: space.lg,
+    gap: space.md,
+  },
+  confirmTitle: { fontSize: font.heading, fontWeight: "800", color: warm.ink, textAlign: "center" },
+  confirmBody: { fontSize: font.body, color: warm.inkMuted, textAlign: "center", lineHeight: 28 },
   center: { alignItems: "center", gap: space.md, paddingVertical: space.xl },
   big: { fontSize: font.heading, fontWeight: "800", color: warm.ink },
   sub: { fontSize: font.body, color: warm.inkMuted, textAlign: "center" },
@@ -300,4 +360,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
   },
   primaryBtnText: { fontSize: font.label, fontWeight: "700", color: colors.onPrimary },
+  secondaryBtn: { minHeight: MIN_TOUCH, alignItems: "center", justifyContent: "center" },
+  secondaryBtnText: { fontSize: font.label, fontWeight: "700", color: warm.terracotta },
 });
