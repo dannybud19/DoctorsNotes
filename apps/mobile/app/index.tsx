@@ -80,8 +80,10 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: warm.cream },
-  content: { padding: space.lg, paddingTop: space.xl, gap: space.md },
-  actions: { gap: space.md },
+  // Real breathing room above the greeting so it clears the status bar rather than hugging it,
+  // and a generous gap between the actions so they read as four separate choices.
+  content: { padding: space.lg, paddingTop: 56, paddingBottom: space.xl, gap: space.lg },
+  actions: { gap: space.lg },
   demo: { alignSelf: "center", paddingVertical: space.sm, marginTop: space.md },
   demoText: { fontSize: font.label, color: warm.inkMuted, textDecorationLine: "underline" },
 });
