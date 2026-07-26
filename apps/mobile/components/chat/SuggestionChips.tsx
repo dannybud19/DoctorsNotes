@@ -1,19 +1,19 @@
-import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { warm } from "../warm";
-import { colors, font, HIT_SLOP, space } from "../../app/lib/theme";
+import { colors, font, HIT_SLOP } from "../../app/lib/theme";
 
 export type Chip = { key: string; label: string };
 
-/** One-tap suggested prompts. Ink text on white (AAA); terracotta only as the pill border. */
+/**
+ * A vertical stack of one-tap suggested prompts that sits directly above the composer — all pills fit
+ * on screen at once (no horizontal sliding). Full-width, compact pills. The parent fades this whole
+ * strip out while a reply is pending and back in once the reply lands. `hitSlop` keeps the tap area
+ * comfortably above the elder-first 56px minimum despite the compact 44px height.
+ */
 export function SuggestionChips({ chips, onPick }: { chips: Chip[]; onPick: (chip: Chip) => void }) {
   if (chips.length === 0) return null;
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={styles.row}
-    >
+    <View style={styles.stack}>
       {chips.map((chip) => (
         <Pressable
           key={chip.key}
@@ -28,20 +28,21 @@ export function SuggestionChips({ chips, onPick }: { chips: Chip[]; onPick: (chi
           </Text>
         </Pressable>
       ))}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { gap: space.sm, paddingHorizontal: space.lg, paddingVertical: space.sm },
+  stack: { paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
   chip: {
-    minHeight: 52,
+    height: 44,
+    alignItems: "center",
     justifyContent: "center",
     borderRadius: 999,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: warm.terracotta,
     backgroundColor: warm.card,
-    paddingHorizontal: space.md,
+    paddingHorizontal: 16,
   },
-  text: { fontSize: font.label, fontWeight: "700", color: colors.text },
+  text: { fontSize: font.label, fontWeight: "600", color: colors.text },
 });

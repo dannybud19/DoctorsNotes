@@ -163,20 +163,66 @@ export const AdmissionPhase = z.enum(["inpatient", "recovering", "recovered"]);
 export type AdmissionPhase = z.infer<typeof AdmissionPhase>;
 
 /**
- * The result of asking a question. FROZEN. Retrieval runs over ClaimGroup[] ONLY; the model never
- * generates a medical fact. Empty `claimIds` can NEVER be 'answered'/'partial' — it is 'no_source'
- * (enforced at the API boundary — the product's core safety property).
+ * One provenance anchor for a sentence of `answerText`. `speaker` + `observedAt` are DERIVED
+ * server-side from the cited claim — never authored by the model — so a citation cannot be fabricated.
+ */
+export const Citation = z
+  .object({
+    claimId: z.string().min(1),
+    /** Display label of who said it, e.g. "Dr Kelly" (copied from the claim's speaker). */
+    speaker: z.string().min(1),
+    observedAt: IsoTimestamp,
+  })
+  .strict();
+export type Citation = z.infer<typeof Citation>;
+
+/**
+ * The result of asking a question. Retrieval runs over ClaimGroup[] ONLY. Empty/irrelevant `claimIds`
+ * can NEVER be 'answered'/'partial' — it is 'no_source' (the product's core safety property, D18).
+ *
+ * D19: 'answered'/'partial' also carry `answerText` (a plain-language restatement) + `citations`.
+ * `answerText` is the D3 derived layer — drawn ONLY from the cited claims, always shown with its
+ * verbatim anchor, never stored as a Claim. `.strict()` on every member (esp. `no_source`) guarantees
+ * prose can only exist where `citations.length >= 1`; the guard drops it otherwise.
  */
 export const AskResponse = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("answered"), claimIds: z.array(z.string().min(1)).min(1) }),
-  z.object({
-    kind: z.literal("partial"),
-    claimIds: z.array(z.string().min(1)).min(1),
-    gap: z.string().min(1),
-  }),
-  z.object({ kind: z.literal("no_source"), suggestedQuestion: z.string().min(1) }),
+  z
+    .object({
+      kind: z.literal("answered"),
+      claimIds: z.array(z.string().min(1)).min(1),
+      answerText: z.string().min(1),
+      citations: z.array(Citation).min(1),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("partial"),
+      claimIds: z.array(z.string().min(1)).min(1),
+      gap: z.string().min(1),
+      answerText: z.string().min(1),
+      citations: z.array(Citation).min(1),
+    })
+    .strict(),
+  z.object({ kind: z.literal("no_source"), suggestedQuestion: z.string().min(1) }).strict(),
 ]);
 export type AskResponse = z.infer<typeof AskResponse>;
+
+/**
+ * A question the AI proposes for the patient to ASK a clinician — grounded in the claims that motivated
+ * it (`fromClaimIds` >= 1). Framed strictly as a question, never advice. Distinct from the reconciler's
+ * discrepancy-based `buildQuestions`; this adds knowledge-gap depth (severity, side effects, warning signs).
+ */
+export const GeneratedQuestion = z
+  .object({
+    id: z.string().min(1),
+    prompt: z.string().min(1),
+    fromClaimIds: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+export type GeneratedQuestion = z.infer<typeof GeneratedQuestion>;
+
+export const GeneratedQuestions = z.object({ questions: z.array(GeneratedQuestion) }).strict();
+export type GeneratedQuestions = z.infer<typeof GeneratedQuestions>;
 
 /** A question the patient saved to raise later. */
 export const SavedQuestion = z.object({

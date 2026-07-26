@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {
+      "id": "gq0",
+      "prompt": "How much damage was done to my heart, and do you know my ejection fraction?",
+      "fromClaimIds": ["a1"]
+    },
+    {
+      "id": "gq1",
+      "prompt": "My discharge letter says aspirin 150 mg but I was told 75 mg — which should I take, and starting when?",
+      "fromClaimIds": ["a2", "a9"]
+    },
+    {
+      "id": "gq2",
+      "prompt": "Lisinopril is new for me — what side effects should I watch for, and what should I do if I miss a dose?",
+      "fromClaimIds": ["a3"]
+    },
+    {
+      "id": "gq3",
+      "prompt": "You mentioned a possible water tablet that wasn't finalised — was it decided, and is it on my paperwork?",
+      "fromClaimIds": ["a5"]
+    }
+  ]
+}

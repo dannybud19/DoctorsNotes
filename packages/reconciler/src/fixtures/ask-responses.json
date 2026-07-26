@@ -1,12 +1,22 @@
 {
   "answered": {
     "kind": "answered",
-    "claimIds": ["a4", "a10"]
+    "claimIds": ["a4", "a10"],
+    "answerText": "Your metformin stays the same — 500 mg twice a day, morning and evening.",
+    "citations": [
+      { "claimId": "a4", "speaker": "Dr Kelly", "observedAt": "2024-11-01T09:13:00Z" },
+      { "claimId": "a10", "speaker": "your discharge letter", "observedAt": "2024-11-01T10:00:00Z" }
+    ]
   },
   "partial": {
     "kind": "partial",
     "claimIds": ["a2", "a9"],
-    "gap": "The dose you were told (75mg) and the dose on your discharge letter (150mg) don't match — worth checking which is right."
+    "gap": "The dose you were told (75mg) and the dose on your discharge letter (150mg) don't match — worth checking which is right.",
+    "answerText": "You were told to take aspirin, one 75 mg tablet once a day — but your discharge letter says 150 mg once a day.",
+    "citations": [
+      { "claimId": "a2", "speaker": "Dr Kelly", "observedAt": "2024-11-01T09:11:00Z" },
+      { "claimId": "a9", "speaker": "your discharge letter", "observedAt": "2024-11-01T10:00:00Z" }
+    ]
   },
   "no_source": {
     "kind": "no_source",
