@@ -1,5 +1,5 @@
 {
-  "name": "@doctorsnotes/domain",
+  "name": "@medthread/domain",
   "version": "0.0.0",
   "private": true,
   "type": "module",

@@ -5,7 +5,7 @@ import {
   type Claim,
   type ClaimGroup,
   type Confirmation,
-} from "@doctorsnotes/domain";
+} from "@medthread/domain";
 import { reconcile } from "./reconcile";
 import metoprololFixture from "./fixtures/metoprolol.json";
 import admissionFixture from "./fixtures/admission-5day.json";

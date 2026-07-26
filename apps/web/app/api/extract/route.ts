@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClaudeExtractor, createScribeTranscriber } from "@doctorsnotes/ai";
-import { createServiceClient } from "@doctorsnotes/supabase";
+import { createClaudeExtractor, createScribeTranscriber } from "@medthread/ai";
+import { createServiceClient } from "@medthread/supabase";
 
 // The one path that must work live: audio → transcribe (Scribe) → extract (Claude) → claims.
 export const runtime = "nodejs";

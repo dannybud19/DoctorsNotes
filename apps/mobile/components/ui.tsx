@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { Claim } from "@doctorsnotes/domain";
+import type { Claim } from "@medthread/domain";
 import { formatDate, sourceKindLabel, sourceSummary } from "../app/lib/data";
 import { colors, font, HIT_SLOP, MIN_TOUCH, record, space } from "../app/lib/theme";
 

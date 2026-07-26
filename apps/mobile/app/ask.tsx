@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import type { AskResponse } from "@doctorsnotes/domain";
+import type { AskResponse } from "@medthread/domain";
 import { BackButton, ClaimCard, Field, PlainButton, Screen, SectionTitle } from "../components/ui";
 import { askResponses, claimGroups, entryId, getClaim } from "./lib/data";
 import { colors, font, space } from "./lib/theme";
 
-// Screen 6 — Chat with BeSide (LIVE). Sends the question + the reconciled picture to /api/ask, which
+// Screen 6 — Chat with MedThread (LIVE). Sends the question + the reconciled picture to /api/ask, which
 // answers by RETRIEVAL over claims only (never a generated fact). On any failure it falls back to the
 // sample fixture responses so the demo never shows a blank screen — same pattern as recording.
 const FALLBACK_ORDER = ["answered", "partial", "no_source"] as const;
@@ -92,7 +92,7 @@ export default function Ask() {
   return (
     <Screen scroll>
       <BackButton onPress={() => router.back()} />
-      <Text style={styles.h1}>Chat with BeSide</Text>
+      <Text style={styles.h1}>Chat with MedThread</Text>
       <Field label="Your question" value={q} onChangeText={setQ} placeholder="e.g. What is my aspirin dose?" />
       <PlainButton label="Ask" onPress={ask} disabled={phase === "loading"} />
 

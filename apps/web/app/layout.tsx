@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "DoctorsNotes",
+  title: "MedThread",
   description: "Follow what is happening to you — verbatim, with provenance.",
 };
 

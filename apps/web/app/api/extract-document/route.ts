@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClaudeDocumentExtractor } from "@doctorsnotes/ai";
+import { createClaudeDocumentExtractor } from "@medthread/ai";
 
 // Document path: a photographed clinical document → Claude vision → verbatim, document-sourced claims.
 export const runtime = "nodejs";

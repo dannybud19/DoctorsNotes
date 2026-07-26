@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { AskResponse, ClaimGroup } from "@doctorsnotes/domain";
-import { createClaudeAsker } from "@doctorsnotes/ai";
+import { AskResponse, ClaimGroup } from "@medthread/domain";
+import { createClaudeAsker } from "@medthread/ai";
 
-// Chat with BeSide: retrieval over the patient's reconciled ClaimGroup[] ONLY. The model selects
+// Chat with MedThread: retrieval over the patient's reconciled ClaimGroup[] ONLY. The model selects
 // relevant claims; it never generates a medical fact. The empty-claimIds → no_source guard is the
 // product's core safety property and is enforced here at the boundary.
 export const runtime = "nodejs";

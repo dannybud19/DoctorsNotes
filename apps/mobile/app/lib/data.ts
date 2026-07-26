@@ -6,8 +6,8 @@
  * There is NO network and NO AI here — reconcile() and the view builders are pure functions
  * (AGENTS.md §1.3, §1.4). Everything below runs once, at module load.
  */
-import { ReconcileInput } from "@doctorsnotes/domain";
-import type { Claim, ClaimGroup, ClaimSource } from "@doctorsnotes/domain";
+import { ReconcileInput } from "@medthread/domain";
+import type { Claim, ClaimGroup, ClaimSource } from "@medthread/domain";
 import {
   buildQuestions,
   buildRunningPicture,
@@ -15,7 +15,7 @@ import {
   reconcile,
   type Question,
   type RunningPictureEntry,
-} from "@doctorsnotes/reconciler";
+} from "@medthread/reconciler";
 import sessionTranscriptRaw from "./fixtures/session-transcript.json";
 import recoveryRaw from "./fixtures/recovery.json";
 import { getLiveClaims } from "./liveSession";

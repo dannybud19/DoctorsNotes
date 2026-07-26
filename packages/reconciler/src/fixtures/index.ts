@@ -7,7 +7,7 @@ import patientContexts from "./patient-contexts.json";
  * Synthetic, offline fixtures (AGENTS.md D10). Exported so consumers — including the mobile app —
  * can drive screens with no backend and no network. This is NOT real patient data.
  *
- * The shapes are plain JSON; validate with `ReconcileInput.parse(...)` from `@doctorsnotes/domain`
+ * The shapes are plain JSON; validate with `ReconcileInput.parse(...)` from `@medthread/domain`
  * at the point of use so malformed fixtures fail loudly.
  */
 export const fixtures = {

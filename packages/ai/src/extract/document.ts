@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { CLAIM_CATEGORIES, ClaimCategory } from "@doctorsnotes/domain";
-import type { BBox, Claim } from "@doctorsnotes/domain";
+import { CLAIM_CATEGORIES, ClaimCategory } from "@medthread/domain";
+import type { BBox, Claim } from "@medthread/domain";
 import type { DocumentExtractor } from "../types";
 
 const MODEL = "claude-opus-4-8";

@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { AskResponse } from "@doctorsnotes/domain";
+import { AskResponse } from "@medthread/domain";
 import type { Asker } from "../types";
 
 const MODEL = "claude-opus-4-8";

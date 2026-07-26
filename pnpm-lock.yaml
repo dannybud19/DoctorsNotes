@@ -30,13 +30,13 @@ importers:
       '@babel/runtime':
         specifier: ^8.0.0
         version: 8.0.0
-      '@doctorsnotes/domain':
+      '@medthread/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@doctorsnotes/reconciler':
+      '@medthread/reconciler':
         specifier: workspace:*
         version: link:../../packages/reconciler
-      '@doctorsnotes/supabase':
+      '@medthread/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
       expo:
@@ -106,13 +106,13 @@ importers:
 
   apps/web:
     dependencies:
-      '@doctorsnotes/ai':
+      '@medthread/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@doctorsnotes/domain':
+      '@medthread/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@doctorsnotes/supabase':
+      '@medthread/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
       next:
@@ -149,12 +149,12 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.68.0
         version: 0.68.0(zod@3.25.76)
-      '@doctorsnotes/domain':
-        specifier: workspace:*
-        version: link:../domain
       '@elevenlabs/elevenlabs-js':
         specifier: ^2.19.0
         version: 2.59.0
+      '@medthread/domain':
+        specifier: workspace:*
+        version: link:../domain
       zod:
         specifier: ^3.23.8
         version: 3.25.76
@@ -181,7 +181,7 @@ importers:
 
   packages/reconciler:
     dependencies:
-      '@doctorsnotes/domain':
+      '@medthread/domain':
         specifier: workspace:*
         version: link:../domain
     devDependencies:

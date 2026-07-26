@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { CLAIM_CATEGORIES, ClaimCategory, RoleConfidence, SpeakerRole } from "@doctorsnotes/domain";
-import type { Claim } from "@doctorsnotes/domain";
+import { CLAIM_CATEGORIES, ClaimCategory, RoleConfidence, SpeakerRole } from "@medthread/domain";
+import type { Claim } from "@medthread/domain";
 import type { ClaimExtractor, TranscriptResult, TranscriptWord } from "../types";
 
 const MODEL = "claude-opus-4-8";

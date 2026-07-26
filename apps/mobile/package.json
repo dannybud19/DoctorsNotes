@@ -1,5 +1,5 @@
 {
-  "name": "@doctorsnotes/mobile",
+  "name": "@medthread/mobile",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -14,9 +14,9 @@
   "//": "ZERO AI dependencies here — enforced by dependency-cruiser (AGENTS.md §2). Capture deps (expo-audio/expo-camera/expo-sqlite) are added with the capture feature; this scaffold only needs to boot.",
   "dependencies": {
     "@babel/runtime": "^8.0.0",
-    "@doctorsnotes/domain": "workspace:*",
-    "@doctorsnotes/reconciler": "workspace:*",
-    "@doctorsnotes/supabase": "workspace:*",
+    "@medthread/domain": "workspace:*",
+    "@medthread/reconciler": "workspace:*",
+    "@medthread/supabase": "workspace:*",
     "expo": "~52.0.0",
     "expo-audio": "~0.3.5",
     "expo-constants": "~17.0.0",

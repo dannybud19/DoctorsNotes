@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "DoctorsNotes",
-    "slug": "doctorsnotes",
-    "scheme": "doctorsnotes",
+    "name": "MedThread",
+    "slug": "medthread",
+    "scheme": "medthread",
     "version": "0.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",

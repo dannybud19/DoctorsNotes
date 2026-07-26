@@ -3,7 +3,7 @@
  * Concrete providers (ElevenLabs Scribe, Claude) implement these; the interface keeps them swappable
  * and keeps provider SDKs out of the mobile bundle.
  */
-import type { AskResponse, Claim, ClaimGroup } from "@doctorsnotes/domain";
+import type { AskResponse, Claim, ClaimGroup } from "@medthread/domain";
 
 export interface TranscriptWord {
   text: string;

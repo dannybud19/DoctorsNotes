@@ -1,11 +1,11 @@
-import { InvariantError } from "@doctorsnotes/domain";
+import { InvariantError } from "@medthread/domain";
 import type {
   Claim,
   ClaimCategory,
   ClaimGroup,
   ClaimGroupStatus,
   Confirmation,
-} from "@doctorsnotes/domain";
+} from "@medthread/domain";
 
 /**
  * Pure, derived VIEW builders over reconciled groups.

@@ -1,5 +1,5 @@
 {
-  "name": "@doctorsnotes/ai",
+  "name": "@medthread/ai",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
-    "@doctorsnotes/domain": "workspace:*",
+    "@medthread/domain": "workspace:*",
     "@elevenlabs/elevenlabs-js": "^2.19.0",
     "zod": "^3.23.8"
   },

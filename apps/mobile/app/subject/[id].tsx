@@ -1,4 +1,4 @@
-import type { Claim } from "@doctorsnotes/domain";
+import type { Claim } from "@medthread/domain";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
