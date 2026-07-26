@@ -26,18 +26,25 @@ and how work integrates. It is the contract. Product intent and decisions live i
 
 ## 2. Architecture
 
+> **Naming:** workspace packages are `@medthread/*` (product display name **MedThread**; the repo
+> directory is still `DoctorsNotes`). See PROJECT.md D16.
+
 ```
 apps/
-  mobile/   Expo (SDK 56), Expo Router. ZERO ai deps. Captures audio/photos, displays verbatim,
+  mobile/   Expo (SDK 52), Expo Router. ZERO ai deps. Captures audio/photos, displays verbatim,
             caches claims, runs reconcile() locally. Boots in Expo Go (reminder needs a dev build).
-  web/      Next.js 16 App Router on Vercel. Route Handlers (Node runtime, Fluid Compute).
-            The ONLY place that imports packages/ai. Extraction, explanation, ingest.
+            Calls the web routes below via EXPO_PUBLIC_API_URL, always with a fixture fallback.
+  web/      Next.js App Router on Vercel. Route Handlers (Node runtime). The ONLY place that imports
+            packages/ai. LIVE routes: /api/extract (audio→claims), /api/ask (retrieval Q&A),
+            /api/extract-document (Claude vision→document claims). /api/explain, /api/ingest stubbed.
 packages/
   domain/       PURE TS + zod. Claim, ClaimSource (discriminated union), ClaimGroup, Confirmation,
-                category/subject. Zero runtime deps beyond zod. The provenance contract.
+                AskResponse, category/subject. Zero runtime deps beyond zod. The provenance contract.
   reconciler/   PURE deterministic reconcile(claims, confirmations) + JSON fixtures. Depends ONLY
                 on domain. No network, no node builtins, no react.
-  ai/           SERVER-ONLY. Transcriber / Ocr / Explainer interfaces (swappable). Imported ONLY by web.
+  ai/           SERVER-ONLY, imported ONLY by web. Interfaces (swappable) + Claude/Scribe impls:
+                Transcriber, ClaimExtractor, DocumentExtractor, Asker, Ocr, Explainer. Uses the direct
+                Anthropic SDK by design (the "use @ai-sdk/anthropic" lint hint here is a false positive).
   supabase/     Generated DB types + typed client factories (anon vs service role).
   config/       Shared tsconfig + eslint.
 ```
@@ -115,6 +122,8 @@ REPORT BACK
 - [ ] Every surfaced statement is verbatim and traces to a resolvable `ClaimSource`.
 - [ ] No paraphrase is stored as a `Claim`; plain-language is derived and clearly marked.
 - [ ] "Questions for tomorrow" are framed as questions to ask, never as advice.
+- [ ] Ask/Chat is retrieval-only: a response with empty or irrelevant `claimIds` is `no_source`, never
+      a generated answer (enforced by `resolveAskResponse` + `AskResponse.parse` at the route boundary).
 - [ ] Reminders fire only on a patient-`Confirmation`, never on an inferred/latest value.
 - [ ] No AI import reachable from `apps/mobile`. No secret or patient identity in client code.
 - [ ] Errors throw loudly; no empty catch, no silent default.
